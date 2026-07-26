@@ -1,0 +1,267 @@
+---
+/**
+ * BookCard - Reusable book card component
+ * 
+ * Features:
+ * - Multiple variants (default, compact, featured)
+ * - Premium card styling
+ * - Hover effects
+ * - Accessible
+ */
+
+interface Props {
+  title: string;
+  description: string;
+  coverImage: string;
+  publishDate?: Date;
+  previewLink?: string;
+  amazonLink?: string;
+  featured?: boolean;
+  status?: 'upcoming' | 'available' | 'bestseller';
+  badge?: string;
+  variant?: 'default' | 'compact' | 'featured';
+}
+
+const {
+  title,
+  description,
+  coverImage,
+  publishDate,
+  previewLink,
+  amazonLink,
+  featured = false,
+  status = 'available',
+  badge,
+  variant = 'default',
+} = Astro.props;
+
+const formattedDate = publishDate?.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'short',
+});
+
+const primaryLink = previewLink || amazonLink;
+
+const statusLabels = {
+  upcoming: 'Coming Soon',
+  available: 'Available Now',
+  bestseller: 'Bestseller',
+};
+---
+
+<article class:list={['book-card', `book-card-${variant}`, { featured }]}>
+  <a href={primaryLink} class="book-card-link" aria-label={`View ${title}`}>
+    <div class="book-card-cover">
+      <img src={coverImage} alt={`${title} cover`} loading="lazy" />
+      {badge && (
+        <span class="book-card-badge">{badge}</span>
+      )}
+    </div>
+    
+    <div class="book-card-content">
+      <h3 class="book-card-title">{title}</h3>
+      
+      {variant !== 'compact' && (
+        <p class="book-card-description">{description}</p>
+      )}
+      
+      <div class="book-card-meta">
+        {formattedDate && (
+          <span class="book-card-date">{formattedDate}</span>
+        )}
+        {status !== 'available' && (
+          <span class="book-card-status" data-status={status}>
+            {statusLabels[status]}
+          </span>
+        )}
+      </div>
+      
+      {variant === 'featured' && (
+        <div class="book-card-actions">
+          {previewLink && (
+            <span class="book-card-btn book-card-btn-primary">Read Preview</span>
+          )}
+          {amazonLink && (
+            <span class="book-card-btn book-card-btn-secondary">Buy Now</span>
+          )}
+        </div>
+      )}
+    </div>
+  </a>
+</article>
+
+<style>
+  .book-card {
+    border-radius: var(--radius-lg);
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    overflow: hidden;
+    transition: all var(--transition-fast);
+  }
+  
+  .book-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--color-border-light);
+  }
+  
+  .book-card-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+  }
+  
+  /* Cover */
+  .book-card-cover {
+    position: relative;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+  }
+  
+  .book-card-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--transition-slow);
+  }
+  
+  .book-card:hover .book-card-cover img {
+    transform: scale(1.05);
+  }
+  
+  .book-card-badge {
+    position: absolute;
+    top: var(--space-3);
+    left: var(--space-3);
+    padding: var(--space-1) var(--space-3);
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: var(--radius-full);
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+  }
+  
+  /* Content */
+  .book-card-content {
+    padding: var(--space-5);
+  }
+  
+  .book-card-title {
+    font-size: var(--text-lg);
+    font-weight: 700;
+    margin-bottom: var(--space-2);
+    line-height: var(--leading-tight);
+  }
+  
+  .book-card-description {
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+    line-height: var(--leading-relaxed);
+    margin-bottom: var(--space-3);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .book-card-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    font-size: var(--text-xs);
+    color: var(--color-text-tertiary);
+  }
+  
+  .book-card-status[data-status="upcoming"] {
+    color: #f59e0b;
+    font-weight: 600;
+  }
+  
+  .book-card-status[data-status="bestseller"] {
+    color: #10b981;
+    font-weight: 600;
+  }
+  
+  .book-card-actions {
+    display: flex;
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+  }
+  
+  .book-card-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+  }
+  
+  .book-card-btn-primary {
+    background: var(--color-accent);
+    color: white;
+  }
+  
+  .book-card-btn-secondary {
+    background: var(--color-bg-alt);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+  }
+  
+  /* Compact Variant */
+  .book-card-compact {
+    display: flex;
+    flex-direction: row;
+    border: none;
+    background: transparent;
+  }
+  
+  .book-card-compact:hover {
+    transform: none;
+    box-shadow: none;
+  }
+  
+  .book-card-compact .book-card-link {
+    display: flex;
+    gap: var(--space-4);
+  }
+  
+  .book-card-compact .book-card-cover {
+    width: 80px;
+    flex-shrink: 0;
+    border-radius: var(--radius-md);
+  }
+  
+  .book-card-compact .book-card-content {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .book-card-compact .book-card-title {
+    font-size: var(--text-base);
+  }
+  
+  /* Featured Variant */
+  .book-card-featured {
+    box-shadow: var(--shadow-md);
+  }
+  
+  .book-card-featured.featured {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 1px var(--color-accent), var(--shadow-lg);
+  }
+  
+  .book-card-featured .book-card-content {
+    padding: var(--space-6);
+  }
+  
+  .book-card-featured .book-card-title {
+    font-size: var(--text-xl);
+  }
+</style>

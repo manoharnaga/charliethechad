@@ -1,0 +1,314 @@
+---
+/**
+ * Dynamic book page - /books/[slug]
+ */
+
+import Base from '@/layouts/Base.astro';
+import Header from '@/components/Header.astro';
+import Footer from '@/components/Footer.astro';
+import BookPageHero from '@/components/books/BookPageHero.astro';
+import BookThemeTags from '@/components/books/BookThemeTags.astro';
+import BookPreviewSection from '@/components/books/BookPreviewSection.astro';
+import BookStickyPromo from '@/components/books/BookStickyPromo.astro';
+import { getCollection, render } from 'astro:content';
+import { SITE } from '@/config/site';
+
+export async function getStaticPaths() {
+  const books = await getCollection('books');
+  return books.map((book) => ({
+    params: { slug: book.id },
+    props: { book },
+  }));
+}
+
+const { book } = Astro.props;
+const { Content } = await render(book);
+
+const {
+  title,
+  description,
+  seoDescription,
+  tagline,
+  coverImage,
+  publishDate,
+  status,
+  amazonLink,
+  goodreadsLink,
+  previewLink,
+  otherRetailers,
+  themes,
+  genres,
+  pageCount,
+  promotion,
+} = book.data;
+
+const seoDesc = seoDescription || description;
+
+// Schema.org Book structured data
+const bookSchema = {
+  "@context": "https://schema.org",
+  "@type": "Book",
+  "name": title,
+  "description": seoDesc,
+  "image": new URL(coverImage, Astro.site).toString(),
+  "author": {
+    "@type": "Person",
+    "name": SITE.author.name
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": SITE.name
+  },
+  "datePublished": publishDate?.toISOString().split('T')[0],
+  "genre": genres?.join(', '),
+  "numberOfPages": pageCount,
+  "inLanguage": "en",
+  ...(amazonLink && {
+    "workExample": {
+      "@type": "Book",
+      "bookFormat": "https://schema.org/EBook",
+      "potentialAction": {
+        "@type": "ReadAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": amazonLink,
+          "actionPlatform": [
+            "https://schema.org/DesktopWebPlatform",
+            "https://schema.org/MobileWebPlatform"
+          ]
+        }
+      }
+    }
+  })
+};
+---
+
+<Base 
+  title={title}
+  description={seoDesc}
+  image={coverImage}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(bookSchema)} />
+  
+  <Header />
+  
+  <main class="book-page">
+    <!-- Hero Section -->
+    <BookPageHero
+      title={title}
+      description={description}
+      tagline={tagline}
+      coverImage={coverImage}
+      publishDate={publishDate}
+      badge={promotion?.badge}
+      status={status}
+      previewLink={previewLink}
+      amazonLink={amazonLink}
+      goodreadsLink={goodreadsLink}
+      otherRetailers={otherRetailers}
+      pageCount={pageCount}
+      genres={genres}
+    />
+    
+    <!-- About This Book -->
+    <section class="about-section">
+      <div class="container">
+        <h2 class="section-title">About This Book</h2>
+        <div class="about-content prose">
+          <Content />
+        </div>
+      </div>
+    </section>
+    
+    <!-- Themes Section -->
+    {themes && themes.length > 0 && (
+      <section class="themes-section">
+        <div class="container">
+          <BookThemeTags themes={themes} />
+        </div>
+      </section>
+    )}
+    
+    <!-- CTA Section -->
+    <section class="cta-section">
+      <div class="container">
+        <div class="cta-card">
+          <h3>Ready to Begin the Journey?</h3>
+          <p>Start reading {title} today and discover a story that stays with you.</p>
+          <div class="cta-actions">
+            {previewLink && (
+              <a href={previewLink} class="cta-btn cta-btn-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+                </svg>
+                Read Free Preview
+              </a>
+            )}
+            {amazonLink && (
+              <a href={amazonLink} class="cta-btn cta-btn-secondary" target="_blank" rel="noopener">
+                Buy on Amazon
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  
+  <Footer />
+  
+  <!-- Sticky Promo Widget -->
+  {promotion?.stickyWidget !== false && (
+    <BookStickyPromo
+      title={title}
+      coverImage={coverImage}
+      previewLink={previewLink}
+      buyLink={amazonLink}
+    />
+  )}
+</Base>
+
+<style>
+  .book-page {
+    min-height: 100vh;
+  }
+  
+  .container {
+    max-width: var(--max-width-content);
+    margin: 0 auto;
+    padding: 0 var(--space-6);
+  }
+  
+  /* About Section */
+  .about-section {
+    padding: var(--space-16) 0;
+    background: var(--color-bg);
+  }
+  
+  .section-title {
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: var(--space-8);
+    position: relative;
+  }
+  
+  .section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: var(--color-accent);
+    border-radius: var(--radius-full);
+  }
+  
+  .about-content {
+    max-width: var(--max-width-prose);
+    margin: 0 auto;
+  }
+  
+  .about-content :global(p) {
+    margin-bottom: var(--space-4);
+    line-height: var(--leading-loose);
+    color: var(--color-text-secondary);
+    font-size: var(--text-lg);
+  }
+  
+  .about-content :global(h2) {
+    font-size: var(--text-xl);
+    font-weight: 600;
+    margin-top: var(--space-8);
+    margin-bottom: var(--space-4);
+    color: var(--color-text);
+  }
+  
+  .about-content :global(blockquote) {
+    border-left: 3px solid var(--color-accent);
+    padding-left: var(--space-4);
+    margin: var(--space-6) 0;
+    font-style: italic;
+    color: var(--color-text-secondary);
+  }
+  
+  /* Themes Section */
+  .themes-section {
+    padding: var(--space-12) 0;
+    background: var(--color-bg-alt);
+  }
+  
+  /* CTA Section */
+  .cta-section {
+    padding: var(--space-16) 0;
+    background: var(--color-bg);
+  }
+  
+  .cta-card {
+    text-align: center;
+    padding: var(--space-12);
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(99, 102, 241, 0.05) 100%);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  
+  [data-theme="dark"] .cta-card {
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.15) 0%, rgba(99, 102, 241, 0.1) 100%);
+  }
+  
+  .cta-card h3 {
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    margin-bottom: var(--space-3);
+  }
+  
+  .cta-card p {
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-6);
+  }
+  
+  .cta-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    justify-content: center;
+  }
+  
+  .cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-4) var(--space-6);
+    font-size: var(--text-base);
+    font-weight: 600;
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+  }
+  
+  .cta-btn-primary {
+    background: linear-gradient(135deg, var(--color-accent) 0%, #1d4ed8 100%);
+    color: white;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+  }
+  
+  .cta-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+    color: white;
+  }
+  
+  .cta-btn-secondary {
+    background: var(--color-bg);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+  }
+  
+  .cta-btn-secondary:hover {
+    border-color: var(--color-text-secondary);
+    color: var(--color-text);
+  }
+</style>

@@ -1,0 +1,9 @@
+# Cloudflare Pages Redirects
+# https://developers.cloudflare.com/pages/platform/redirects
+
+# Common URL cleanup
+/blog/index.html  /blog  301
+/index.html       /      301
+
+# Trailing slash normalization (if needed)
+# /blog/  /blog  301

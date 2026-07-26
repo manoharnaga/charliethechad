@@ -1,0 +1,113 @@
+---
+import Base from '@/layouts/Base.astro';
+import Header from '@/components/Header.astro';
+import Footer from '@/components/Footer.astro';
+
+const lastUpdated = 'June 2026';
+---
+
+<Base title="Privacy Policy" description="Privacy policy for CharlieTheChad.">
+  <Header />
+  
+  <main class="privacy-page">
+    <div class="container">
+      <header class="page-header">
+        <h1>Privacy Policy</h1>
+        <p>Last updated: {lastUpdated}</p>
+      </header>
+      
+      <div class="prose">
+        <p>
+          Your privacy is important. This privacy policy explains what information is collected 
+          when you visit charliethechad.com and how that information is used.
+        </p>
+        
+        <h2>Information Collected</h2>
+        <p>
+          This website collects minimal data. We do not use cookies for tracking purposes. 
+          The information that may be collected includes:
+        </p>
+        <ul>
+          <li><strong>Analytics:</strong> Basic page view data to understand which content is helpful. 
+          This may include pages visited, time spent, and general location (country level).</li>
+          <li><strong>Newsletter subscription:</strong> If you choose to subscribe, your email 
+          address is collected to send you updates.</li>
+        </ul>
+        
+        <h2>How Information Is Used</h2>
+        <ul>
+          <li>To improve the content and user experience of this website</li>
+          <li>To send newsletter updates (only if you subscribe)</li>
+          <li>To respond to your messages or inquiries</li>
+        </ul>
+        
+        <h2>Third-Party Services</h2>
+        <p>This website may use the following third-party services:</p>
+        <ul>
+          <li><strong>Analytics:</strong> To understand how visitors use the site</li>
+          <li><strong>Newsletter service:</strong> To manage email subscriptions</li>
+        </ul>
+        <p>
+          These services have their own privacy policies governing their use of your data.
+        </p>
+        
+        <h2>Your Rights</h2>
+        <p>You have the right to:</p>
+        <ul>
+          <li>Request access to any personal data held about you</li>
+          <li>Request deletion of your personal data</li>
+          <li>Unsubscribe from the newsletter at any time</li>
+          <li>Contact us with any privacy concerns</li>
+        </ul>
+        
+        <h2>Data Security</h2>
+        <p>
+          Reasonable measures are taken to protect any personal information. However, 
+          no method of transmission over the internet is 100% secure.
+        </p>
+        
+        <h2>Changes to This Policy</h2>
+        <p>
+          This privacy policy may be updated from time to time. Any changes will be 
+          posted on this page with an updated date.
+        </p>
+        
+        <h2>Contact</h2>
+        <p>
+          If you have any questions about this privacy policy, please 
+          <a href="/contact">contact us</a>.
+        </p>
+      </div>
+    </div>
+  </main>
+  
+  <Footer />
+</Base>
+
+<style>
+  .privacy-page {
+    min-height: calc(100vh - var(--header-height));
+    padding-bottom: var(--space-20);
+  }
+  
+  .container {
+    max-width: var(--max-width-prose);
+    margin: 0 auto;
+    padding: 0 var(--space-6);
+  }
+  
+  .page-header {
+    padding: var(--space-16) 0 var(--space-10);
+  }
+  
+  .page-header h1 {
+    font-size: var(--text-4xl);
+    font-weight: 700;
+    margin-bottom: var(--space-2);
+  }
+  
+  .page-header p {
+    font-size: var(--text-base);
+    color: var(--color-text-secondary);
+  }
+</style>

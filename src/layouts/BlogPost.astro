@@ -1,0 +1,915 @@
+---
+import Base from './Base.astro';
+import Header from '@/components/Header.astro';
+import Footer from '@/components/Footer.astro';
+import TipJar from '@/components/TipJar.astro';
+import BookArticlePromo from '@/components/books/BookArticlePromo.astro';
+import BookStickyPromo from '@/components/books/BookStickyPromo.astro';
+import { getCollection } from 'astro:content';
+import { SITE } from '@/config/site';
+
+interface Props {
+  title: string;
+  description: string;
+  pubDate: Date;
+  updatedDate?: Date;
+  coverImage?: string;
+  coverAlt?: string;
+  author?: string;
+  category?: string;
+  tags?: string[];
+  readingTime?: number;
+}
+
+const { 
+  title, 
+  description, 
+  pubDate, 
+  updatedDate,
+  coverImage, 
+  coverAlt,
+  author = SITE.author.name,
+  category = 'General',
+  tags = [],
+  readingTime
+} = Astro.props;
+
+// Get featured book for article promotion
+let featuredBook = null;
+try {
+  const books = await getCollection('books');
+  featuredBook = books.find(book => book.data.featured);
+} catch (e) {
+  // Books collection may not exist yet
+}
+
+// Check if book promotion is enabled
+const showBookPromo = featuredBook && 
+  featuredBook.data.promotion?.enabled !== false && 
+  featuredBook.data.promotion?.articlePromo !== false;
+
+const showStickyWidget = featuredBook && 
+  featuredBook.data.promotion?.enabled !== false && 
+  featuredBook.data.promotion?.stickyWidget !== false;
+
+const formattedPubDate = pubDate.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric'
+});
+
+const formattedUpdatedDate = updatedDate?.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric'
+});
+
+// Estimate reading time if not provided
+const estimatedReadingTime = readingTime || 5;
+---
+
+<Base 
+  title={title} 
+  description={description} 
+  image={coverImage}
+  article={true}
+  publishDate={pubDate}
+  updatedDate={updatedDate}
+  author={author}
+  tags={tags}
+>
+  <!-- Reading Progress Bar -->
+  <div class="progress-bar" aria-hidden="true">
+    <div class="progress-bar-fill" id="progress-bar-fill"></div>
+  </div>
+  
+  <Header />
+  
+  <main class="article-page">
+    <article class="article">
+      <!-- Article Header -->
+      <header class="article-header">
+        <div class="article-header-content">
+          <a href={`/blog?category=${category}`} class="category-link">
+            {category}
+          </a>
+          
+          <h1 class="article-title">{title}</h1>
+          
+          <p class="article-subtitle">{description}</p>
+          
+          <div class="article-meta">
+            <div class="author-info">
+              <div class="author-avatar">
+                <img src="/favicon.ico" alt={author} />
+              </div>
+              <div class="author-details">
+                <span class="author-name">{author}</span>
+                <div class="meta-row">
+                  <time datetime={pubDate.toISOString()}>{formattedPubDate}</time>
+                  {updatedDate && (
+                    <>
+                      <span class="separator">·</span>
+                      <span>Updated {formattedUpdatedDate}</span>
+                    </>
+                  )}
+                  <span class="separator">·</span>
+                  <span>{estimatedReadingTime} min read</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+      
+      <!-- Hero Image -->
+      {coverImage && (
+        <figure class="article-hero">
+          <img src={coverImage} alt={coverAlt || title} loading="eager" />
+        </figure>
+      )}
+      
+      <!-- Article Layout with TOC -->
+      <div class="article-layout">
+        <!-- Table of Contents (Desktop) -->
+        <aside class="toc-sidebar" id="toc-sidebar">
+          <nav class="toc" aria-label="Table of contents">
+            <h4>On this page</h4>
+            <ul id="toc-list"></ul>
+          </nav>
+        </aside>
+        
+        <!-- Article Content -->
+        <div class="article-content">
+          <div class="prose">
+            <slot />
+          </div>
+          
+          <!-- Tags -->
+          {tags.length > 0 && (
+            <div class="article-tags">
+              {tags.map(tag => (
+                <a href={`/blog?tag=${tag}`} class="tag">
+                  #{tag}
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+      
+      <!-- Article Footer -->
+      <footer class="article-footer">
+        <div class="share-section">
+          <h4>Share this article</h4>
+          <div class="share-buttons">
+            <a 
+              href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${Astro.url}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="share-btn"
+              aria-label="Share on Twitter"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4l11.733 16h4.267l-11.733 -16z"/>
+                <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"/>
+              </svg>
+            </a>
+            <a 
+              href={`https://www.linkedin.com/sharing/share-offsite/?url=${Astro.url}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="share-btn"
+              aria-label="Share on LinkedIn"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+                <rect width="4" height="12" x="2" y="9"/>
+                <circle cx="4" cy="4" r="2"/>
+              </svg>
+            </a>
+            <button 
+              class="share-btn"
+              id="copy-link"
+              aria-label="Copy link"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        
+        <div class="author-section">
+          <div class="author-avatar large">
+            <img src="/favicon.ico" alt={author} />
+          </div>
+          <div class="author-bio">
+            <span class="written-by">Written by</span>
+            <h4>{author}</h4>
+            <p>{SITE.tagline}</p>
+          </div>
+        </div>
+      </footer>
+    </article>
+    
+    <!-- Leave me a tip -->
+    <TipJar />
+    
+    <!-- Book Promotion Section -->
+    {showBookPromo && featuredBook && (
+      <div class="book-promo-wrapper">
+        <BookArticlePromo
+          title={featuredBook.data.title}
+          description={featuredBook.data.description}
+          coverImage={featuredBook.data.coverImage}
+          previewLink={featuredBook.data.previewLink}
+          amazonLink={featuredBook.data.amazonLink}
+        />
+      </div>
+    )}
+    
+    <!-- Newsletter CTA -->
+    {SITE.newsletter.enabled && (
+      <section class="newsletter-section">
+        <div class="newsletter-content">
+          <h3>{SITE.newsletter.heading}</h3>
+          <p>{SITE.newsletter.description}</p>
+          <form class="newsletter-form" action={SITE.newsletter.endpoint} method="post">
+            <input type="email" placeholder={SITE.newsletter.placeholder} required />
+            <button type="submit">{SITE.newsletter.buttonText}</button>
+          </form>
+        </div>
+      </section>
+    )}
+  </main>
+  
+  <Footer />
+  
+  <!-- Sticky Book Promo Widget -->
+  {showStickyWidget && featuredBook && (
+    <BookStickyPromo
+      title={featuredBook.data.title}
+      coverImage={featuredBook.data.coverImage}
+      previewLink={featuredBook.data.previewLink}
+      buyLink={featuredBook.data.amazonLink}
+    />
+  )}
+</Base>
+
+<style>
+  /* Reading Progress Bar */
+  .progress-bar {
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: color-mix(in srgb, var(--color-accent) 18%, transparent);
+    z-index: 350;
+    pointer-events: none;
+  }
+
+  .progress-bar-fill {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-accent) 0%, #60a5fa 100%);
+    box-shadow: 0 0 10px rgba(37, 99, 235, 0.35);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 100ms linear;
+    will-change: transform;
+  }
+  
+  /* Article Page */
+  .article-page {
+    min-height: calc(100vh - var(--header-height));
+  }
+  
+  .article {
+    max-width: var(--max-width-wide);
+    margin: 0 auto;
+    padding: 0 var(--space-6);
+  }
+  
+  /* Article Header */
+  .article-header {
+    max-width: var(--max-width-prose);
+    margin: 0 auto;
+    padding: var(--space-12) 0 var(--space-8);
+    text-align: center;
+  }
+  
+  .category-link {
+    display: inline-block;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--space-4);
+  }
+  
+  .article-title {
+    font-size: clamp(var(--text-3xl), 5vw, var(--text-5xl));
+    font-weight: 700;
+    line-height: var(--leading-tight);
+    margin-bottom: var(--space-4);
+  }
+  
+  .article-subtitle {
+    font-size: var(--text-xl);
+    color: var(--color-text-secondary);
+    line-height: var(--leading-relaxed);
+    margin-bottom: var(--space-8);
+  }
+  
+  .article-meta {
+    display: flex;
+    justify-content: center;
+  }
+  
+  .author-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+  }
+  
+  .author-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-full);
+    background: linear-gradient(135deg, var(--color-accent) 0%, #60a5fa 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  
+  .author-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .author-avatar.large {
+    width: 64px;
+    height: 64px;
+  }
+  
+  .author-details {
+    text-align: left;
+  }
+  
+  .author-name {
+    font-weight: 600;
+    color: var(--color-text);
+  }
+  
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+    margin-top: var(--space-1);
+  }
+  
+  .separator {
+    color: var(--color-border);
+  }
+  
+  /* Hero Image */
+  .article-hero {
+    max-width: 900px;
+    margin: 0 auto var(--space-12);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+  }
+  
+  .article-hero img {
+    width: 100%;
+    height: auto;
+  }
+  
+  /* Article Layout */
+  .article-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-12);
+    max-width: var(--max-width-prose);
+    margin: 0 auto;
+  }
+  
+  @media (min-width: 1200px) {
+    .article-layout {
+      grid-template-columns: 1fr 200px;
+      max-width: calc(var(--max-width-prose) + 260px);
+    }
+  }
+  
+  /* Table of Contents */
+  .toc-sidebar {
+    display: none;
+    order: 2;
+  }
+  
+  @media (min-width: 1200px) {
+    .toc-sidebar {
+      display: block;
+    }
+
+    .toc-sidebar.is-empty {
+      display: none;
+    }
+  }
+  
+  .toc {
+    position: sticky;
+    top: calc(var(--header-height) + var(--space-8));
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - var(--header-height) - var(--space-12));
+  }
+  
+  .toc h4 {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-tertiary);
+    margin-bottom: var(--space-4);
+    flex-shrink: 0;
+  }
+  
+  /* Scrollable list area so long TOCs never get cut off mid-way. */
+  .toc :global(#toc-list) {
+    list-style: none;
+    border-left: 2px solid var(--color-border);
+    padding-left: 0;
+    margin: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) transparent;
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent 0,
+      #000 var(--space-4),
+      #000 calc(100% - var(--space-4)),
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0,
+      #000 var(--space-4),
+      #000 calc(100% - var(--space-4)),
+      transparent 100%
+    );
+  }
+
+  .toc :global(#toc-list)::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .toc :global(#toc-list)::-webkit-scrollbar-thumb {
+    background-color: var(--color-border);
+    border-radius: var(--radius-full);
+  }
+
+  /* Nested collapsible child list (h3/h4) */
+  .toc :global(.toc-children) {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height var(--transition-base) ease;
+  }
+
+  .toc :global(.toc-group.is-open > .toc-children),
+  .toc :global(.toc-group:hover > .toc-children),
+  .toc :global(.toc-group:focus-within > .toc-children) {
+    max-height: 60vh;
+  }
+
+  /* TOC list items and links are generated at runtime via JS, so they lack
+     Astro's scoped attribute. Use :global() so these rules still match. */
+  .toc :global(li) {
+    margin-bottom: 2px;
+  }
+  
+  .toc :global(a) {
+    font-size: var(--text-sm);
+    color: var(--color-text-tertiary);
+    transition: color var(--transition-fast),
+                border-color var(--transition-fast),
+                background-color var(--transition-fast);
+    display: block;
+    line-height: var(--leading-snug);
+    padding: var(--space-2) var(--space-4);
+    margin-left: -2px;
+    border-left: 2px solid transparent;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  }
+  
+  .toc :global(a:hover) {
+    color: var(--color-text);
+    background-color: var(--color-bg-alt);
+    border-left-color: var(--color-border);
+  }
+  
+  .toc :global(a.active) {
+    color: var(--color-accent);
+    font-weight: 600;
+    border-left-color: var(--color-accent);
+    background-color: var(--color-accent-light);
+  }
+
+  /* Section (h2) toggle row with a rotating chevron */
+  .toc :global(a.toc-link-h2) {
+    font-weight: 600;
+    color: var(--color-text-secondary);
+  }
+
+  .toc :global(.toc-group.is-open > a.toc-link-h2),
+  .toc :global(.toc-group:hover > a.toc-link-h2) {
+    color: var(--color-text);
+  }
+
+  .toc :global(.toc-chevron) {
+    display: inline-block;
+    width: 0.85em;
+    margin-right: 0.35em;
+    text-align: center;
+    transition: transform var(--transition-fast);
+    color: var(--color-text-tertiary);
+  }
+
+  .toc :global(.toc-group.is-open > a.toc-link-h2 .toc-chevron),
+  .toc :global(.toc-group:hover > a.toc-link-h2 .toc-chevron) {
+    transform: rotate(90deg);
+  }
+
+  .toc :global(a.toc-link-h3) {
+    padding-left: var(--space-8);
+  }
+
+  .toc :global(a.toc-link-h4) {
+    padding-left: var(--space-12);
+  }
+  
+  /* Article Content */
+  .article-content {
+    order: 1;
+    min-width: 0;
+  }
+  
+  /* Tags */
+  .article-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: var(--space-12);
+    padding-top: var(--space-8);
+    border-top: 1px solid var(--color-border);
+  }
+  
+  .tag {
+    font-size: var(--text-sm);
+    color: var(--color-accent);
+    background-color: var(--color-accent-light);
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+  }
+  
+  .tag:hover {
+    background-color: var(--color-accent);
+    color: white;
+  }
+  
+  /* Article Footer */
+  .article-footer {
+    max-width: var(--max-width-prose);
+    margin: var(--space-12) auto 0;
+    padding-top: var(--space-8);
+    border-top: 1px solid var(--color-border);
+  }
+  
+  .share-section {
+    margin-bottom: var(--space-10);
+    text-align: center;
+  }
+  
+  .share-section h4 {
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-4);
+  }
+  
+  .share-buttons {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-3);
+  }
+  
+  .share-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-full);
+    background-color: var(--color-bg-alt);
+    color: var(--color-text-secondary);
+    transition: all var(--transition-fast);
+  }
+  
+  .share-btn:hover {
+    background-color: var(--color-text);
+    color: var(--color-bg);
+  }
+  
+  .author-section {
+    display: flex;
+    align-items: center;
+    gap: var(--space-6);
+    padding: var(--space-8);
+    background-color: var(--color-bg-alt);
+    border-radius: var(--radius-lg);
+  }
+  
+  .author-bio {
+    flex: 1;
+  }
+  
+  .written-by {
+    font-size: var(--text-sm);
+    color: var(--color-text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  
+  .author-bio h4 {
+    font-size: var(--text-xl);
+    font-weight: 600;
+    margin: var(--space-1) 0 var(--space-2);
+  }
+  
+  .author-bio p {
+    font-size: var(--text-base);
+    color: var(--color-text-secondary);
+  }
+  
+  /* Book Promotion Wrapper */
+  .book-promo-wrapper {
+    max-width: var(--max-width-prose);
+    margin: var(--space-12) auto 0;
+    padding: 0 var(--space-6);
+  }
+  
+  /* Newsletter Section */
+  .newsletter-section {
+    max-width: var(--max-width-prose);
+    margin: var(--space-16) auto 0;
+    padding: var(--space-12) var(--space-6);
+    background-color: var(--color-bg-alt);
+    border-radius: var(--radius-xl);
+    text-align: center;
+  }
+  
+  .newsletter-content h3 {
+    font-size: var(--text-2xl);
+    font-weight: 600;
+    margin-bottom: var(--space-2);
+  }
+  
+  .newsletter-content p {
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-6);
+  }
+  
+  .newsletter-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    max-width: 400px;
+    margin: 0 auto;
+  }
+  
+  @media (min-width: 480px) {
+    .newsletter-form {
+      flex-direction: row;
+    }
+  }
+  
+  .newsletter-form input {
+    flex: 1;
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--text-base);
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+  }
+  
+  .newsletter-form input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px var(--color-accent-light);
+  }
+  
+  .newsletter-form button {
+    padding: var(--space-3) var(--space-6);
+    font-weight: 500;
+    background-color: var(--color-accent);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: transform var(--transition-fast), 
+                box-shadow var(--transition-fast);
+  }
+  
+  .newsletter-form button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  }
+</style>
+
+<script>
+  // Cleanup from previous client-side navigation to prevent duplicate listeners.
+  (window as any).__blogProgressCleanup?.();
+
+  // Optimized: Single scroll handler with rAF throttling
+  const $ = (s: string) => document.getElementById(s);
+  const $$ = (s: string) => document.querySelectorAll(s);
+  
+  const progressBarFill = $('progress-bar-fill') as HTMLElement | null;
+  const tocList = $('toc-list');
+  const articleContent = document.querySelector('.prose');
+  const tocSidebar = $('toc-sidebar');
+  
+  // Generate Table of Contents (runs once)
+  let headings: NodeListOf<HTMLHeadingElement> | null = null;
+  let tocLinks: NodeListOf<HTMLAnchorElement> | null = null;
+  // Map each heading id -> its top-level (h2) group element, so we can
+  // expand the relevant section while scrolling through it.
+  const groupByHeadingId = new Map<string, HTMLElement>();
+  
+  if (tocList && articleContent) {
+    headings = articleContent.querySelectorAll('h2, h3, h4');
+    if (headings.length === 0) {
+      tocSidebar?.classList.add('is-empty');
+    }
+    const fragment = document.createDocumentFragment();
+
+    let currentGroup: HTMLElement | null = null;
+    let currentChildList: HTMLUListElement | null = null;
+
+    const makeLink = (heading: HTMLHeadingElement, id: string, withChevron: boolean) => {
+      const a = document.createElement('a');
+      a.href = `#${id}`;
+      a.classList.add(`toc-link-${heading.tagName.toLowerCase()}`);
+      if (withChevron) {
+        const chevron = document.createElement('span');
+        chevron.className = 'toc-chevron';
+        chevron.setAttribute('aria-hidden', 'true');
+        chevron.textContent = '›';
+        a.appendChild(chevron);
+      }
+      a.appendChild(document.createTextNode(heading.textContent || ''));
+      return a;
+    };
+
+    headings.forEach((heading, index) => {
+      const id = `heading-${index}`;
+      heading.id = id;
+      const tag = heading.tagName;
+
+      if (tag === 'H2') {
+        // Start a new collapsible section group.
+        const group = document.createElement('li');
+        group.className = 'toc-group';
+
+        const link = makeLink(heading, id, true);
+        group.appendChild(link);
+
+        const childList = document.createElement('ul');
+        childList.className = 'toc-children';
+        group.appendChild(childList);
+
+        fragment.appendChild(group);
+
+        currentGroup = group;
+        currentChildList = childList;
+        groupByHeadingId.set(id, group);
+      } else {
+        // h3 / h4 nested under the most recent h2 (or top-level if none yet).
+        const li = document.createElement('li');
+        li.appendChild(makeLink(heading, id, false));
+
+        if (currentChildList && currentGroup) {
+          currentChildList.appendChild(li);
+          groupByHeadingId.set(id, currentGroup);
+        } else {
+          fragment.appendChild(li);
+        }
+      }
+    });
+
+    tocList.appendChild(fragment);
+    tocLinks = tocList.querySelectorAll('a');
+
+    // Chevron click toggles its section open/closed without navigating.
+    tocList.querySelectorAll('.toc-chevron').forEach(chevron => {
+      chevron.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const group = (chevron as HTMLElement).closest('.toc-group');
+        group?.classList.toggle('is-open');
+      });
+    });
+  }
+  
+  // Combined scroll handler (throttled with rAF)
+  let ticking = false;
+  let openGroup: HTMLElement | null = null;
+  
+  function onScroll() {
+    if (ticking) return;
+    
+    requestAnimationFrame(() => {
+      // Update progress bar
+      if (progressBarFill) {
+        const doc = document.documentElement;
+        const maxScroll = Math.max(doc.scrollHeight - window.innerHeight, 1);
+        const raw = window.scrollY / maxScroll;
+        const progress = Math.min(Math.max(raw, 0), 1);
+        // Use transform rather than width to avoid layout thrash/flicker.
+        progressBarFill.style.transform = `scaleX(${progress.toFixed(4)})`;
+      }
+      
+      // Update active TOC item
+      if (headings && tocLinks) {
+        let current = '';
+        headings.forEach(h => {
+          if (h.getBoundingClientRect().top <= 150) current = h.id;
+        });
+        let activeLink: HTMLAnchorElement | null = null;
+        tocLinks.forEach(link => {
+          const isActive = link.getAttribute('href') === `#${current}`;
+          link.classList.toggle('active', isActive);
+          if (isActive) activeLink = link;
+        });
+
+        // Expand only the section that contains the current heading.
+        const nextGroup = current ? groupByHeadingId.get(current) ?? null : null;
+        if (nextGroup !== openGroup) {
+          openGroup?.classList.remove('is-open');
+          nextGroup?.classList.add('is-open');
+          openGroup = nextGroup;
+        }
+
+        // Keep the active link visible within the scrollable TOC.
+        if (activeLink && tocList) {
+          const linkEl = activeLink as HTMLAnchorElement;
+          const linkTop = linkEl.offsetTop;
+          const linkBottom = linkTop + linkEl.offsetHeight;
+          if (linkTop < tocList.scrollTop || linkBottom > tocList.scrollTop + tocList.clientHeight) {
+            tocList.scrollTop = linkTop - tocList.clientHeight / 2;
+          }
+        }
+      }
+      
+      ticking = false;
+    });
+    
+    ticking = true;
+  }
+  
+  addEventListener('scroll', onScroll, { passive: true });
+  addEventListener('resize', onScroll, { passive: true });
+  addEventListener('load', onScroll);
+
+  (window as any).__blogProgressCleanup = () => {
+    removeEventListener('scroll', onScroll);
+    removeEventListener('resize', onScroll);
+    removeEventListener('load', onScroll);
+  };
+
+  onScroll(); // Initial call
+  
+  // Copy Link Button
+  $('copy-link')?.addEventListener('click', async function(this: HTMLElement) {
+    try {
+      await navigator.clipboard.writeText(location.href);
+      const original = this.innerHTML;
+      this.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>';
+      setTimeout(() => { this.innerHTML = original; }, 2000);
+    } catch (e) {}
+  });
+</script>

@@ -1,0 +1,137 @@
+---
+/**
+ * BookThemeTags - Visual theme tags for book page
+ * "What Readers Will Experience" section
+ */
+
+interface Props {
+  themes: string[];
+  title?: string;
+}
+
+const {
+  themes,
+  title = 'What Readers Will Experience',
+} = Astro.props;
+
+// Theme icons mapping (using simple emojis for reliability)
+const themeIcons: Record<string, string> = {
+  'First Love': '💕',
+  'Friendship': '🤝',
+  'Heartbreak': '💔',
+  'Survival': '🌱',
+  'University Life': '🎓',
+  'Emotional Growth': '🦋',
+  'Relationships': '💞',
+  'Personal Transformation': '✨',
+  'Adventure': '🌍',
+  'Mystery': '🔍',
+  'Family': '👨‍👩‍👧',
+  'Self-Discovery': '🔮',
+  'Hope': '🌅',
+  'Loss': '🕊️',
+  'Redemption': '🌟',
+  'Coming of Age': '🌸',
+  'Family Love': '👨‍👩‍👧‍👦',
+  'Shattered Night': '💥',
+  'Deep Grief': '🕯️',
+  'Fight to Survive': '🛡️',
+  'Quiet Courage': '🦁',
+  'Hope & Healing': '🌅',
+  'Lost and Found': '🧭',
+  'New Dawn': '🌄',
+};
+
+const getIcon = (theme: string) => themeIcons[theme] || '📖';
+---
+
+<section class="theme-tags-section" aria-labelledby="themes-title">
+  <h3 id="themes-title" class="themes-title">{title}</h3>
+  
+  <div class="themes-grid">
+    {themes.map((theme) => (
+      <div class="theme-card">
+        <span class="theme-icon" aria-hidden="true">{getIcon(theme)}</span>
+        <span class="theme-label">{theme}</span>
+      </div>
+    ))}
+  </div>
+</section>
+
+<style>
+  .theme-tags-section {
+    padding: var(--space-12) 0;
+  }
+  
+  .themes-title {
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: var(--space-8);
+    position: relative;
+  }
+  
+  .themes-title::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: var(--color-accent);
+    border-radius: var(--radius-full);
+  }
+  
+  .themes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: var(--space-4);
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .theme-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-5);
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    transition: all var(--transition-fast);
+  }
+  
+  .theme-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--color-accent);
+  }
+  
+  .theme-icon {
+    font-size: 1.5rem;
+    line-height: 1;
+  }
+  
+  .theme-label {
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--color-text);
+  }
+  
+  @media (max-width: 480px) {
+    .themes-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .theme-card {
+      flex-direction: column;
+      text-align: center;
+      padding: var(--space-4);
+    }
+    
+    .theme-icon {
+      font-size: 2rem;
+    }
+  }
+</style>

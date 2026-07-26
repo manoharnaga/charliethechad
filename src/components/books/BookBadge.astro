@@ -1,0 +1,105 @@
+---
+/**
+ * BookBadge - Status badge for books
+ */
+
+interface Props {
+  variant?: 'new-release' | 'bestseller' | 'coming-soon' | 'available' | 'custom';
+  text?: string;
+  size?: 'sm' | 'md' | 'lg';
+}
+
+const {
+  variant = 'new-release',
+  text,
+  size = 'md',
+} = Astro.props;
+
+const variants = {
+  'new-release': { label: 'NEW RELEASE', color: 'blue' },
+  'bestseller': { label: 'BESTSELLER', color: 'green' },
+  'coming-soon': { label: 'COMING SOON', color: 'amber' },
+  'available': { label: 'AVAILABLE NOW', color: 'gray' },
+  'custom': { label: text || 'FEATURED', color: 'purple' },
+};
+
+const { label, color } = variants[variant];
+const displayText = text || label;
+---
+
+<span class:list={['book-badge', `badge-${color}`, `badge-${size}`]}>
+  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+  </svg>
+  {displayText}
+</span>
+
+<style>
+  .book-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: var(--radius-full);
+  }
+  
+  /* Sizes */
+  .badge-sm {
+    padding: 0.25rem 0.625rem;
+    font-size: 0.625rem;
+  }
+  
+  .badge-sm svg {
+    width: 10px;
+    height: 10px;
+  }
+  
+  .badge-md {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.6875rem;
+  }
+  
+  .badge-lg {
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+  }
+  
+  .badge-lg svg {
+    width: 14px;
+    height: 14px;
+  }
+  
+  /* Colors */
+  .badge-blue {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+  }
+  
+  .badge-green {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+  }
+  
+  .badge-amber {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+  }
+  
+  .badge-gray {
+    background: var(--color-bg-alt);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
+    box-shadow: none;
+  }
+  
+  .badge-purple {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+  }
+</style>

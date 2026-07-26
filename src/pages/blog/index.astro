@@ -1,0 +1,459 @@
+---
+import Base from '@/layouts/Base.astro';
+import Header from '@/components/Header.astro';
+import Footer from '@/components/Footer.astro';
+import BlogCard from '@/components/BlogCard.astro';
+import { getCollection } from 'astro:content';
+
+// Get all non-draft posts
+const allPosts = (await getCollection('blog', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+// Extract unique categories and tags
+const categories = [...new Set(allPosts.map(post => post.data.category))].filter(Boolean);
+const allTags = allPosts.flatMap(post => post.data.tags || []);
+const tagCounts = allTags.reduce((acc, tag) => {
+  acc[tag] = (acc[tag] || 0) + 1;
+  return acc;
+}, {} as Record<string, number>);
+const popularTags = Object.entries(tagCounts)
+  .sort((a, b) => b[1] - a[1])
+  .slice(0, 10)
+  .map(([tag]) => tag);
+---
+
+<Base title="Blog" description="Thoughts on money, career, life, and minimalism.">
+  <Header />
+  
+  <main class="blog-page">
+    <div class="container">
+      <!-- Page Header -->
+      <header class="page-header">
+        <h1>Blog</h1>
+        <p>Thoughts and insights on building a better life.</p>
+      </header>
+      
+      <!-- Search & Filters -->
+      <div class="filters">
+        <div class="search-box">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.3-4.3"></path>
+          </svg>
+          <input 
+            type="search" 
+            id="search-input" 
+            placeholder="Search articles..." 
+            aria-label="Search articles"
+          />
+        </div>
+        
+        {categories.length > 0 && (
+          <div class="filter-group">
+            <button class="filter-btn active" data-category="all">All</button>
+            {categories.map(category => (
+              <button class="filter-btn" data-category={category}>
+                {category}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+      
+      <!-- Tags -->
+      {popularTags.length > 0 && (
+        <div class="tags-section">
+          {popularTags.map(tag => (
+            <button class="tag-btn" data-tag={tag}>
+              #{tag}
+            </button>
+          ))}
+        </div>
+      )}
+      
+      <!-- Sort Options -->
+      <div class="sort-options">
+        <span class="post-count" id="post-count">{allPosts.length} articles</span>
+        <div class="sort-buttons">
+          <button class="sort-btn active" data-sort="newest">Newest</button>
+          <button class="sort-btn" data-sort="oldest">Oldest</button>
+        </div>
+      </div>
+      
+      <!-- Posts Grid -->
+      <div class="posts-grid" id="posts-grid">
+        {allPosts.map(post => (
+          <article 
+            class="post-item" 
+            data-title={post.data.title.toLowerCase()}
+            data-description={post.data.description.toLowerCase()}
+            data-category={post.data.category}
+            data-tags={(post.data.tags || []).join(',')}
+            data-date={post.data.pubDate.valueOf()}
+          >
+            <BlogCard
+              title={post.data.title}
+              description={post.data.description}
+              slug={post.id}
+              pubDate={post.data.pubDate}
+              coverImage={post.data.coverImage}
+              tags={post.data.tags}
+              readingTime={post.data.readingTime}
+              variant="default"
+              featured={post.data.featured}
+            />
+          </article>
+        ))}
+      </div>
+      
+      <!-- No Results -->
+      <div class="no-results" id="no-results" style="display: none;">
+        <p>No articles found matching your search.</p>
+        <button class="clear-filters" id="clear-filters">Clear filters</button>
+      </div>
+    </div>
+  </main>
+  
+  <Footer />
+</Base>
+
+<style>
+  .blog-page {
+    min-height: calc(100vh - var(--header-height));
+    padding-bottom: var(--space-20);
+  }
+  
+  .container {
+    max-width: var(--max-width-content);
+    margin: 0 auto;
+    padding: 0 var(--space-6);
+  }
+  
+  /* Page Header */
+  .page-header {
+    padding: var(--space-16) 0 var(--space-10);
+    text-align: center;
+  }
+  
+  .page-header h1 {
+    font-size: var(--text-4xl);
+    font-weight: 700;
+    margin-bottom: var(--space-3);
+  }
+  
+  .page-header p {
+    font-size: var(--text-lg);
+    color: var(--color-text-secondary);
+  }
+  
+  /* Filters */
+  .filters {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+  }
+  
+  @media (min-width: 768px) {
+    .filters {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+  }
+  
+  .search-box {
+    position: relative;
+    flex: 1;
+    max-width: 400px;
+  }
+  
+  .search-box svg {
+    position: absolute;
+    left: var(--space-4);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-text-tertiary);
+  }
+  
+  .search-box input {
+    width: 100%;
+    padding: var(--space-3) var(--space-4) var(--space-3) var(--space-12);
+    font-size: var(--text-base);
+    background-color: var(--color-bg-alt);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    transition: border-color var(--transition-fast), 
+                box-shadow var(--transition-fast);
+  }
+  
+  .search-box input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px var(--color-accent-light);
+  }
+  
+  .search-box input::placeholder {
+    color: var(--color-text-tertiary);
+  }
+  
+  .filter-group {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+  }
+  
+  .filter-btn {
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    background-color: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+  
+  .filter-btn:hover {
+    border-color: var(--color-text-secondary);
+    color: var(--color-text);
+  }
+  
+  .filter-btn.active {
+    background-color: var(--color-text);
+    color: var(--color-bg);
+    border-color: var(--color-text);
+  }
+  
+  /* Tags */
+  .tags-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-bottom: var(--space-8);
+  }
+  
+  .tag-btn {
+    padding: var(--space-1) var(--space-3);
+    font-size: var(--text-sm);
+    color: var(--color-accent);
+    background-color: var(--color-accent-light);
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+  
+  .tag-btn:hover,
+  .tag-btn.active {
+    background-color: var(--color-accent);
+    color: white;
+  }
+  
+  /* Sort Options */
+  .sort-options {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-6);
+    padding-bottom: var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+  }
+  
+  .post-count {
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+  }
+  
+  .sort-buttons {
+    display: flex;
+    gap: var(--space-2);
+  }
+  
+  .sort-btn {
+    padding: var(--space-1) var(--space-3);
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color var(--transition-fast);
+  }
+  
+  .sort-btn:hover,
+  .sort-btn.active {
+    color: var(--color-text);
+  }
+  
+  .sort-btn.active {
+    font-weight: 600;
+  }
+  
+  /* Posts Grid */
+  .posts-grid {
+    display: grid;
+    gap: var(--space-6);
+  }
+  
+  @media (min-width: 640px) {
+    .posts-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  .post-item {
+    animation: fadeInUp var(--transition-slow) ease-out;
+  }
+  
+  .post-item.hidden {
+    display: none;
+  }
+  
+  /* No Results */
+  .no-results {
+    text-align: center;
+    padding: var(--space-16) 0;
+  }
+  
+  .no-results p {
+    font-size: var(--text-lg);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-4);
+  }
+  
+  .clear-filters {
+    padding: var(--space-2) var(--space-6);
+    font-weight: 500;
+    color: var(--color-accent);
+    background: none;
+    border: 1px solid var(--color-accent);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+  
+  .clear-filters:hover {
+    background-color: var(--color-accent);
+    color: white;
+  }
+</style>
+
+<script>
+  // DOM Elements
+  const searchInput = document.getElementById('search-input') as HTMLInputElement;
+  const postsGrid = document.getElementById('posts-grid');
+  const postItems = document.querySelectorAll('.post-item');
+  const postCount = document.getElementById('post-count');
+  const noResults = document.getElementById('no-results');
+  const clearFilters = document.getElementById('clear-filters');
+  const filterButtons = document.querySelectorAll('.filter-btn');
+  const tagButtons = document.querySelectorAll('.tag-btn');
+  const sortButtons = document.querySelectorAll('.sort-btn');
+  
+  let activeCategory = 'all';
+  let activeTag = '';
+  let searchQuery = '';
+  let sortOrder = 'newest';
+  
+  function filterPosts() {
+    let visibleCount = 0;
+    
+    postItems.forEach(item => {
+      const el = item as HTMLElement;
+      const title = el.dataset.title || '';
+      const description = el.dataset.description || '';
+      const category = el.dataset.category || '';
+      const tags = (el.dataset.tags || '').split(',');
+      
+      const matchesSearch = !searchQuery || 
+        title.includes(searchQuery.toLowerCase()) || 
+        description.includes(searchQuery.toLowerCase());
+      
+      const matchesCategory = activeCategory === 'all' || category === activeCategory;
+      const matchesTag = !activeTag || tags.includes(activeTag);
+      
+      if (matchesSearch && matchesCategory && matchesTag) {
+        el.classList.remove('hidden');
+        visibleCount++;
+      } else {
+        el.classList.add('hidden');
+      }
+    });
+    
+    // Update post count
+    if (postCount) {
+      postCount.textContent = `${visibleCount} article${visibleCount !== 1 ? 's' : ''}`;
+    }
+    
+    // Show/hide no results message
+    if (noResults) {
+      noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+    }
+  }
+  
+  function sortPosts() {
+    if (!postsGrid) return;
+    
+    const items = Array.from(postItems);
+    items.sort((a, b) => {
+      const dateA = parseInt((a as HTMLElement).dataset.date || '0');
+      const dateB = parseInt((b as HTMLElement).dataset.date || '0');
+      return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+    });
+    
+    items.forEach(item => postsGrid.appendChild(item));
+  }
+  
+  // Event Listeners
+  searchInput?.addEventListener('input', (e) => {
+    searchQuery = (e.target as HTMLInputElement).value;
+    filterPosts();
+  });
+  
+  filterButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeCategory = (btn as HTMLElement).dataset.category || 'all';
+      filterPosts();
+    });
+  });
+  
+  tagButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const isActive = btn.classList.contains('active');
+      tagButtons.forEach(b => b.classList.remove('active'));
+      
+      if (isActive) {
+        activeTag = '';
+      } else {
+        btn.classList.add('active');
+        activeTag = (btn as HTMLElement).dataset.tag || '';
+      }
+      filterPosts();
+    });
+  });
+  
+  sortButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      sortButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      sortOrder = (btn as HTMLElement).dataset.sort || 'newest';
+      sortPosts();
+    });
+  });
+  
+  clearFilters?.addEventListener('click', () => {
+    searchQuery = '';
+    activeCategory = 'all';
+    activeTag = '';
+    
+    if (searchInput) searchInput.value = '';
+    filterButtons.forEach(b => b.classList.remove('active'));
+    filterButtons[0]?.classList.add('active');
+    tagButtons.forEach(b => b.classList.remove('active'));
+    
+    filterPosts();
+  });
+</script>

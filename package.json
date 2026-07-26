@@ -1,0 +1,27 @@
+{
+  "name": "charliethechad",
+  "type": "module",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "test": "npm run test:unit && npm run test:integration",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest",
+    "test:integration": "playwright test",
+    "test:integration:ui": "playwright test --ui",
+    "test:security": "playwright test tests/integration/security.spec.ts"
+  },
+  "dependencies": {
+    "@astrojs/rss": "^4.0.0",
+    "@astrojs/sitemap": "^3.7.3",
+    "astro": "^7.0.3"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.1",
+    "happy-dom": "^20.10.6",
+    "lightningcss": "^1.32.0",
+    "vitest": "^4.1.9"
+  }
+}

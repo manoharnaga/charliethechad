@@ -1,0 +1,326 @@
+---
+/**
+ * BookCarousel - Horizontal scrolling book carousel
+ * 
+ * Features:
+ * - Touch gestures on mobile
+ * - Keyboard navigation on desktop
+ * - Smooth scrolling
+ * - Navigation arrows
+ * - Accessible
+ */
+
+import BookCard from './BookCard.astro';
+
+interface Book {
+  title: string;
+  description: string;
+  coverImage: string;
+  publishDate?: Date;
+  previewLink?: string;
+  amazonLink?: string;
+  featured?: boolean;
+  status?: 'upcoming' | 'available' | 'bestseller';
+  badge?: string;
+}
+
+interface Props {
+  books: Book[];
+  title?: string;
+  showNavigation?: boolean;
+}
+
+const {
+  books,
+  title = 'Books',
+  showNavigation = true,
+} = Astro.props;
+
+const carouselId = `carousel-${Math.random().toString(36).substr(2, 9)}`;
+---
+
+<section class="book-carousel-section" aria-labelledby={`${carouselId}-title`}>
+  <div class="carousel-header">
+    <h2 id={`${carouselId}-title`} class="carousel-title">{title}</h2>
+    
+    {showNavigation && books.length > 2 && (
+      <div class="carousel-nav">
+        <button 
+          class="carousel-btn carousel-prev" 
+          data-carousel={carouselId}
+          data-direction="prev"
+          aria-label="Previous books"
+          type="button"
+          disabled
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m15 18-6-6 6-6"/>
+          </svg>
+        </button>
+        <button 
+          class="carousel-btn carousel-next" 
+          data-carousel={carouselId}
+          data-direction="next"
+          aria-label="Next books"
+          type="button"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m9 18 6-6-6-6"/>
+          </svg>
+        </button>
+      </div>
+    )}
+  </div>
+  
+  <div 
+    class="carousel-container" 
+    id={carouselId}
+    role="region"
+    aria-label="Book carousel"
+    tabindex="0"
+  >
+    <div class="carousel-track">
+      {books.map((book) => (
+        <div class="carousel-item">
+          <BookCard
+            title={book.title}
+            description={book.description}
+            coverImage={book.coverImage}
+            publishDate={book.publishDate}
+            previewLink={book.previewLink}
+            amazonLink={book.amazonLink}
+            featured={book.featured}
+            status={book.status}
+            badge={book.badge}
+            variant="default"
+          />
+        </div>
+      ))}
+    </div>
+  </div>
+  
+  {books.length > 2 && (
+    <div class="carousel-indicators" data-carousel={carouselId}>
+      {books.map((_, index) => (
+        <button 
+          class:list={['indicator', { active: index === 0 }]}
+          data-index={index}
+          aria-label={`Go to book ${index + 1}`}
+          type="button"
+        />
+      ))}
+    </div>
+  )}
+</section>
+
+<style>
+  .book-carousel-section {
+    padding: var(--space-12) 0;
+  }
+  
+  .carousel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-8);
+    padding: 0 var(--space-6);
+    max-width: var(--max-width-wide);
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .carousel-title {
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    position: relative;
+  }
+  
+  .carousel-title::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 40px;
+    height: 3px;
+    background: var(--color-accent);
+    border-radius: var(--radius-full);
+  }
+  
+  .carousel-nav {
+    display: flex;
+    gap: var(--space-2);
+  }
+  
+  .carousel-btn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    color: var(--color-text);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+  
+  .carousel-btn:hover:not(:disabled) {
+    background: var(--color-bg-alt);
+    border-color: var(--color-text-secondary);
+  }
+  
+  .carousel-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  
+  .carousel-container {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 0 var(--space-6);
+    max-width: var(--max-width-wide);
+    margin: 0 auto;
+  }
+  
+  .carousel-container::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .carousel-container:focus {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 4px;
+    border-radius: var(--radius-md);
+  }
+  
+  .carousel-track {
+    display: flex;
+    gap: var(--space-6);
+    padding-bottom: var(--space-4);
+  }
+  
+  .carousel-item {
+    flex: 0 0 280px;
+    scroll-snap-align: start;
+  }
+  
+  @media (min-width: 768px) {
+    .carousel-item {
+      flex: 0 0 300px;
+    }
+  }
+  
+  .carousel-indicators {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-2);
+    margin-top: var(--space-6);
+  }
+  
+  .indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-full);
+    background: var(--color-border);
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+  
+  .indicator:hover {
+    background: var(--color-text-tertiary);
+  }
+  
+  .indicator.active {
+    background: var(--color-accent);
+    width: 24px;
+  }
+  
+  @media (max-width: 640px) {
+    .carousel-nav {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Get all carousel containers
+    const carousels = document.querySelectorAll('.carousel-container');
+    
+    carousels.forEach(carousel => {
+      const carouselId = carousel.id;
+      const track = carousel.querySelector('.carousel-track');
+      const items = carousel.querySelectorAll('.carousel-item');
+      const prevBtn = document.querySelector(`[data-carousel="${carouselId}"][data-direction="prev"]`);
+      const nextBtn = document.querySelector(`[data-carousel="${carouselId}"][data-direction="next"]`);
+      const indicators = document.querySelectorAll(`.carousel-indicators[data-carousel="${carouselId}"] .indicator`);
+      
+      if (!track || items.length === 0) return;
+      
+      const itemWidth = items[0].offsetWidth + 24; // Include gap
+      let currentIndex = 0;
+      
+      const updateButtons = () => {
+        if (prevBtn) {
+          prevBtn.disabled = currentIndex === 0;
+        }
+        if (nextBtn) {
+          nextBtn.disabled = currentIndex >= items.length - 1;
+        }
+        
+        indicators.forEach((indicator, index) => {
+          indicator.classList.toggle('active', index === currentIndex);
+        });
+      };
+      
+      const scrollToIndex = (index: number) => {
+        currentIndex = Math.max(0, Math.min(index, items.length - 1));
+        carousel.scrollTo({
+          left: currentIndex * itemWidth,
+          behavior: 'smooth'
+        });
+        updateButtons();
+      };
+      
+      // Navigation buttons
+      prevBtn?.addEventListener('click', () => scrollToIndex(currentIndex - 1));
+      nextBtn?.addEventListener('click', () => scrollToIndex(currentIndex + 1));
+      
+      // Indicators
+      indicators.forEach((indicator, index) => {
+        indicator.addEventListener('click', () => scrollToIndex(index));
+      });
+      
+      // Keyboard navigation
+      carousel.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          scrollToIndex(currentIndex - 1);
+        } else if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          scrollToIndex(currentIndex + 1);
+        }
+      });
+      
+      // Update on scroll (for touch/trackpad scrolling)
+      let scrollTimeout: ReturnType<typeof setTimeout>;
+      carousel.addEventListener('scroll', () => {
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(() => {
+          const scrollLeft = carousel.scrollLeft;
+          const newIndex = Math.round(scrollLeft / itemWidth);
+          if (newIndex !== currentIndex) {
+            currentIndex = newIndex;
+            updateButtons();
+          }
+        }, 100);
+      }, { passive: true });
+      
+      updateButtons();
+    });
+  });
+</script>

@@ -1,0 +1,333 @@
+---
+/**
+ * BookStickyPromo - Floating sticky promotion widget
+ * 
+ * Features:
+ * - Appears after 40% scroll
+ * - Slides in from bottom-right
+ * - Dismissible with localStorage
+ * - Unobtrusive design
+ * - Responsive
+ * - Accessible
+ */
+
+interface Props {
+  title: string;
+  coverImage: string;
+  previewLink?: string;
+  buyLink?: string;
+  ctaText?: string;
+}
+
+const {
+  title,
+  coverImage,
+  previewLink,
+  buyLink,
+  ctaText = 'Read Free Preview',
+} = Astro.props;
+
+const widgetId = `sticky-promo-${title.toLowerCase().replace(/\s+/g, '-')}`;
+const linkHref = previewLink || buyLink;
+---
+
+<div 
+  class="sticky-promo" 
+  id="sticky-promo"
+  data-widget-id={widgetId}
+  role="complementary"
+  aria-label="Book promotion"
+>
+  <button 
+    class="sticky-promo-close" 
+    id="sticky-promo-close"
+    aria-label="Dismiss promotion"
+    type="button"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 6 6 18"/>
+      <path d="m6 6 12 12"/>
+    </svg>
+  </button>
+  
+  <a href={linkHref} class="sticky-promo-content">
+    <div class="sticky-promo-cover">
+      <img src={coverImage} alt={`${title} cover`} loading="lazy" />
+    </div>
+    <div class="sticky-promo-info">
+      <span class="sticky-promo-label">New Book</span>
+      <span class="sticky-promo-title">{title}</span>
+      <span class="sticky-promo-cta">
+        {ctaText}
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14"/>
+          <path d="m12 5 7 7-7 7"/>
+        </svg>
+      </span>
+    </div>
+  </a>
+</div>
+
+<style>
+  .sticky-promo {
+    position: fixed;
+    bottom: var(--space-6);
+    right: var(--space-6);
+    z-index: 90;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(100%) translateX(20px);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+  }
+  
+  .sticky-promo.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) translateX(0);
+    pointer-events: auto;
+  }
+  
+  .sticky-promo.dismissed {
+    display: none;
+  }
+  
+  .sticky-promo-content {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: 
+      0 10px 15px -3px rgba(0, 0, 0, 0.1),
+      0 4px 6px -2px rgba(0, 0, 0, 0.05),
+      0 0 0 1px rgba(0, 0, 0, 0.02);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+    max-width: 280px;
+  }
+  
+  [data-theme="dark"] .sticky-promo-content {
+    box-shadow: 
+      0 10px 15px -3px rgba(0, 0, 0, 0.3),
+      0 4px 6px -2px rgba(0, 0, 0, 0.15);
+  }
+  
+  .sticky-promo-content:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+      0 20px 25px -5px rgba(0, 0, 0, 0.15),
+      0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border-color: var(--color-accent);
+  }
+  
+  [data-theme="dark"] .sticky-promo-content:hover {
+    box-shadow: 
+      0 20px 25px -5px rgba(0, 0, 0, 0.4),
+      0 10px 10px -5px rgba(0, 0, 0, 0.15);
+  }
+  
+  .sticky-promo-close {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    color: var(--color-text-tertiary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    z-index: 1;
+  }
+  
+  .sticky-promo-close:hover {
+    background: var(--color-bg-alt);
+    color: var(--color-text);
+    border-color: var(--color-text-tertiary);
+  }
+  
+  .sticky-promo-cover {
+    width: 56px;
+    height: 75px;
+    flex-shrink: 0;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .sticky-promo-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .sticky-promo-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-width: 0;
+  }
+  
+  .sticky-promo-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-accent);
+  }
+  
+  .sticky-promo-title {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .sticky-promo-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    font-size: var(--text-xs);
+    font-weight: 500;
+    color: var(--color-accent);
+  }
+  
+  /* Mobile adjustments */
+  @media (max-width: 480px) {
+    .sticky-promo {
+      bottom: var(--space-4);
+      right: var(--space-4);
+      left: var(--space-4);
+    }
+    
+    .sticky-promo-content {
+      max-width: none;
+      width: 100%;
+    }
+  }
+  
+  /* Hide on very small screens or when printing */
+  @media (max-width: 360px), print {
+    .sticky-promo {
+      display: none;
+    }
+  }
+  
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .sticky-promo {
+      transition: opacity 0.2s ease;
+      transform: none;
+    }
+    
+    .sticky-promo.visible {
+      transform: none;
+    }
+  }
+</style>
+
+<script>
+  (function () {
+    const init = () => {
+      const widget = document.getElementById('sticky-promo');
+      const closeBtn = document.getElementById('sticky-promo-close');
+
+      if (!widget || !closeBtn) return;
+
+      const widgetId = widget.dataset.widgetId;
+      const dismissedKey = `dismissed-${widgetId}`;
+
+      // Respect a previous dismissal.
+      if (localStorage.getItem(dismissedKey) === 'true') {
+        widget.classList.add('dismissed');
+        return;
+      }
+
+      const show = () => widget.classList.add('visible');
+      const hide = () => widget.classList.remove('visible');
+
+      let observer: IntersectionObserver | null = null;
+
+      // The article uses `content-visibility: auto`, which makes the total
+      // document scrollHeight an unstable estimate. Deriving visibility from
+      // `scrollY / scrollHeight` therefore flickered on/off near the threshold.
+      // Instead, drop a zero-size sentinel roughly halfway through the content
+      // (by block count, which is stable) and reveal the widget via an
+      // IntersectionObserver once the reader actually reaches it.
+      const content =
+        document.querySelector('.article-content .prose') ||
+        document.querySelector('.prose') ||
+        document.querySelector('main');
+
+      if (content && content.children.length > 3) {
+        const kids = Array.from(content.children);
+        const mid = kids[Math.floor(kids.length / 2)] as Element;
+
+        const sentinel = document.createElement('span');
+        sentinel.setAttribute('aria-hidden', 'true');
+        sentinel.style.cssText = 'display:block;width:0;height:0;';
+        mid.before(sentinel);
+
+        observer = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (entry.isIntersecting || entry.boundingClientRect.top < 0) {
+                // Reader has reached (or passed) the halfway mark.
+                show();
+              } else if (entry.boundingClientRect.top > window.innerHeight) {
+                // Scrolled back up above the halfway mark.
+                hide();
+              }
+            }
+          },
+          { threshold: 0, rootMargin: '0px 0px -35% 0px' }
+        );
+        observer.observe(sentinel);
+      } else {
+        // Fallback for short pages: absolute scroll distance is always exact.
+        let ticking = false;
+        const onScroll = () => {
+          if (ticking) return;
+          ticking = true;
+          requestAnimationFrame(() => {
+            if (window.scrollY > Math.max(window.innerHeight * 0.9, 500)) show();
+            else hide();
+            ticking = false;
+          });
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+      }
+
+      // Handle close.
+      closeBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        widget.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+        hide();
+        observer?.disconnect();
+
+        setTimeout(() => {
+          widget.classList.add('dismissed');
+          localStorage.setItem(dismissedKey, 'true');
+        }, 200);
+      });
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  })();
+</script>

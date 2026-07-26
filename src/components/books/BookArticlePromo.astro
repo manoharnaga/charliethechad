@@ -1,0 +1,247 @@
+---
+/**
+ * BookArticlePromo - In-article book promotion section
+ * 
+ * Features:
+ * - Appears naturally in content flow
+ * - Non-intrusive, helpful design
+ * - Relevant messaging for readers
+ * - Premium card styling
+ * - Accessible
+ */
+
+interface Props {
+  title: string;
+  description: string;
+  coverImage: string;
+  previewLink?: string;
+  amazonLink?: string;
+  heading?: string;
+  message?: string;
+}
+
+const {
+  title,
+  description,
+  coverImage,
+  previewLink,
+  amazonLink,
+  heading = "Enjoyed this article?",
+  message = "You might enjoy my novel",
+} = Astro.props;
+---
+
+<aside class="book-article-promo" aria-label="Book recommendation">
+  <div class="promo-container">
+    <div class="promo-header">
+      <span class="promo-label">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+        </svg>
+        From the Author
+      </span>
+    </div>
+    
+    <div class="promo-content">
+      <div class="promo-cover">
+        <img src={coverImage} alt={`${title} book cover`} loading="lazy" />
+      </div>
+      
+      <div class="promo-info">
+        <p class="promo-heading">{heading}</p>
+        <p class="promo-message">{message}</p>
+        
+        <h3 class="promo-title">{title}</h3>
+        <p class="promo-description">{description}</p>
+        
+        <div class="promo-actions">
+          {previewLink && (
+            <a href={previewLink} class="promo-btn promo-btn-primary">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+              </svg>
+              Read Free Preview
+            </a>
+          )}
+          {amazonLink && (
+            <a href={amazonLink} class="promo-btn promo-btn-secondary" target="_blank" rel="noopener">
+              Buy on Amazon
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" x2="21" y1="14" y2="3"/>
+              </svg>
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<style>
+  .book-article-promo {
+    margin: var(--space-12) 0;
+    padding: var(--space-1);
+    background: linear-gradient(135deg, var(--color-accent) 0%, #6366f1 100%);
+    border-radius: calc(var(--radius-xl) + 4px);
+  }
+  
+  .promo-container {
+    background: var(--color-bg);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+  }
+  
+  .promo-header {
+    padding: var(--space-4) var(--space-6);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-bg-alt);
+  }
+  
+  .promo-label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-accent);
+  }
+  
+  .promo-content {
+    display: grid;
+    gap: var(--space-6);
+    padding: var(--space-8);
+  }
+  
+  @media (min-width: 640px) {
+    .promo-content {
+      grid-template-columns: 160px 1fr;
+      gap: var(--space-8);
+    }
+  }
+  
+  .promo-cover {
+    width: 160px;
+    aspect-ratio: 3 / 4;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    margin: 0 auto;
+  }
+  
+  @media (min-width: 640px) {
+    .promo-cover {
+      margin: 0;
+    }
+  }
+  
+  .promo-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .promo-info {
+    text-align: center;
+  }
+  
+  @media (min-width: 640px) {
+    .promo-info {
+      text-align: left;
+    }
+  }
+  
+  .promo-heading {
+    font-size: var(--text-lg);
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: var(--space-1);
+  }
+  
+  .promo-message {
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-4);
+  }
+  
+  .promo-title {
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    margin-bottom: var(--space-2);
+    color: var(--color-text);
+  }
+  
+  .promo-description {
+    font-size: var(--text-base);
+    color: var(--color-text-secondary);
+    line-height: var(--leading-relaxed);
+    margin-bottom: var(--space-6);
+  }
+  
+  .promo-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    justify-content: center;
+  }
+  
+  @media (min-width: 640px) {
+    .promo-actions {
+      justify-content: flex-start;
+    }
+  }
+  
+  .promo-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-5);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+  }
+  
+  .promo-btn-primary {
+    background: linear-gradient(135deg, var(--color-accent) 0%, #1d4ed8 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+  }
+  
+  .promo-btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+    color: white;
+  }
+  
+  .promo-btn-secondary {
+    background: var(--color-bg-alt);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+  }
+  
+  .promo-btn-secondary:hover {
+    border-color: var(--color-text-secondary);
+    color: var(--color-text);
+  }
+  
+  /* Animation */
+  @media (prefers-reduced-motion: no-preference) {
+    .book-article-promo {
+      animation: fadeInUp 0.6s ease-out;
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  }
+</style>

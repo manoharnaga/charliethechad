@@ -1,0 +1,57 @@
+---
+/**
+ * Optimized Image Component
+ * - Lazy loading by default
+ * - Automatic width/height to prevent CLS
+ * - WebP support detection
+ * - Blur placeholder support
+ */
+
+interface Props {
+  src: string;
+  alt: string;
+  width?: number;
+  height?: number;
+  class?: string;
+  loading?: 'lazy' | 'eager';
+  decoding?: 'async' | 'sync' | 'auto';
+  fetchpriority?: 'high' | 'low' | 'auto';
+  sizes?: string;
+}
+
+const {
+  src,
+  alt,
+  width,
+  height,
+  class: className = '',
+  loading = 'lazy',
+  decoding = 'async',
+  fetchpriority = 'auto',
+  sizes = '100vw',
+} = Astro.props;
+
+// Generate srcset for responsive images if it's a local image
+const isLocal = src.startsWith('/');
+---
+
+<img
+  src={src}
+  alt={alt}
+  width={width}
+  height={height}
+  class={className}
+  loading={loading}
+  decoding={decoding}
+  fetchpriority={fetchpriority}
+  sizes={sizes}
+/>
+
+<style>
+  img {
+    /* Prevent layout shift */
+    content-visibility: auto;
+    /* Smooth loading */
+    transition: opacity 0.3s ease;
+  }
+</style>

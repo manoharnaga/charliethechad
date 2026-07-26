@@ -1,0 +1,281 @@
+---
+import Base from '@/layouts/Base.astro';
+import Header from '@/components/Header.astro';
+import Footer from '@/components/Footer.astro';
+import BookCard from '@/components/books/BookCard.astro';
+import BookPageHero from '@/components/books/BookPageHero.astro';
+import BookStickyPromo from '@/components/books/BookStickyPromo.astro';
+import { getCollection } from 'astro:content';
+
+// Try to get books collection
+let books: any[] = [];
+let featuredBook: any = null;
+let otherBooks: any[] = [];
+
+try {
+  books = await getCollection('books');
+  featuredBook = books.find(book => book.data.featured);
+  otherBooks = books.filter(book => !book.data.featured);
+} catch (e) {
+  // Books collection may not exist yet
+}
+---
+
+<Base title="Books" description="Books by CharlieTheChad exploring life, relationships, and the human experience.">
+  <Header />
+  
+  <main class="books-page">
+    {books.length > 0 ? (
+      <>
+        <!-- Featured Book Hero -->
+        {featuredBook && (
+          <BookPageHero
+            title={featuredBook.data.title}
+            description={featuredBook.data.description}
+            tagline={featuredBook.data.tagline}
+            coverImage={featuredBook.data.coverImage}
+            publishDate={featuredBook.data.publishDate}
+            badge={featuredBook.data.promotion?.badge}
+            status={featuredBook.data.status}
+            previewLink={featuredBook.data.previewLink}
+            amazonLink={featuredBook.data.amazonLink}
+            goodreadsLink={featuredBook.data.goodreadsLink}
+            otherRetailers={featuredBook.data.otherRetailers}
+            pageCount={featuredBook.data.pageCount}
+            genres={featuredBook.data.genres}
+          />
+        )}
+        
+        <!-- Other Books Grid -->
+        {otherBooks.length > 0 && (
+          <section class="other-books-section">
+            <div class="container">
+              <h2 class="section-title">More Books</h2>
+              <div class="books-grid">
+                {otherBooks.map(book => (
+                  <BookCard
+                    title={book.data.title}
+                    description={book.data.description}
+                    coverImage={book.data.coverImage}
+                    publishDate={book.data.publishDate}
+                    previewLink={book.data.previewLink}
+                    amazonLink={book.data.amazonLink}
+                    featured={book.data.featured}
+                    status={book.data.status}
+                    badge={book.data.promotion?.badge}
+                    variant="featured"
+                  />
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+        
+        <!-- Coming Soon Section -->
+        <section class="coming-soon-section">
+          <div class="container">
+            <div class="coming-soon-card">
+              <div class="coming-soon-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+                  <path d="M12 6v7l4 2"/>
+                </svg>
+              </div>
+              <h3>More Stories Coming</h3>
+              <p>More books are in the works. Subscribe to the newsletter to be the first to know when new titles are released.</p>
+              <a href="/contact" class="coming-soon-btn">Get Notified</a>
+            </div>
+          </div>
+        </section>
+      </>
+    ) : (
+      <section class="empty-section">
+        <div class="container">
+          <div class="empty-state">
+            <div class="empty-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+                <path d="M12 6h3"/>
+                <path d="M12 10h3"/>
+              </svg>
+            </div>
+            <h2>Coming Soon</h2>
+            <p>Books are currently in the works. Stay tuned!</p>
+            <a href="/blog" class="btn btn-primary">Read the Blog</a>
+          </div>
+        </div>
+      </section>
+    )}
+    
+    <!-- Sticky Promo -->
+    {featuredBook && featuredBook.data.promotion?.stickyWidget !== false && (
+      <BookStickyPromo
+        title={featuredBook.data.title}
+        coverImage={featuredBook.data.coverImage}
+        previewLink={featuredBook.data.previewLink}
+        buyLink={featuredBook.data.amazonLink}
+      />
+    )}
+  </main>
+  
+  <Footer />
+</Base>
+
+<style>
+  .books-page {
+    min-height: calc(100vh - var(--header-height));
+  }
+  
+  .container {
+    max-width: var(--max-width-content);
+    margin: 0 auto;
+    padding: 0 var(--space-6);
+  }
+  
+  /* Other Books Section */
+  .other-books-section {
+    padding: var(--space-16) 0;
+    background: var(--color-bg);
+  }
+  
+  .section-title {
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: var(--space-10);
+    position: relative;
+  }
+  
+  .section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: var(--color-accent);
+    border-radius: var(--radius-full);
+  }
+  
+  .books-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-8);
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  
+  /* Coming Soon Section */
+  .coming-soon-section {
+    padding: var(--space-16) 0;
+    background: var(--color-bg-alt);
+  }
+  
+  .coming-soon-card {
+    text-align: center;
+    padding: var(--space-12);
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  
+  .coming-soon-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%);
+    border-radius: var(--radius-full);
+    color: var(--color-accent);
+    margin-bottom: var(--space-5);
+  }
+  
+  .coming-soon-card h3 {
+    font-size: var(--text-xl);
+    font-weight: 700;
+    margin-bottom: var(--space-3);
+  }
+  
+  .coming-soon-card p {
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-6);
+    line-height: var(--leading-relaxed);
+  }
+  
+  .coming-soon-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-6);
+    background: var(--color-accent);
+    color: white;
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+  }
+  
+  .coming-soon-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    color: white;
+  }
+  
+  /* Empty State */
+  .empty-section {
+    padding: var(--space-20) 0;
+  }
+  
+  .empty-state {
+    text-align: center;
+    padding: var(--space-12);
+  }
+  
+  .empty-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100px;
+    height: 100px;
+    background: var(--color-bg-alt);
+    border-radius: var(--radius-full);
+    color: var(--color-text-tertiary);
+    margin-bottom: var(--space-6);
+  }
+  
+  .empty-state h2 {
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    margin-bottom: var(--space-3);
+  }
+  
+  .empty-state p {
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-6);
+  }
+  
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--space-3) var(--space-6);
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+  }
+  
+  .btn-primary {
+    background: var(--color-accent);
+    color: white;
+  }
+  
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    color: white;
+  }
+</style>

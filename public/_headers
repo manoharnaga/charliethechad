@@ -1,0 +1,52 @@
+# Cloudflare Pages Headers
+# https://developers.cloudflare.com/pages/platform/headers
+
+# All pages - Security & Performance headers
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  X-XSS-Protection: 1; mode=block
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  Cross-Origin-Opener-Policy: same-origin
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self'; manifest-src 'self'; upgrade-insecure-requests
+
+# Static assets - Long cache (1 year, immutable)
+# Astro adds content hashes to filenames, so these are safe
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Images - Medium cache (1 week) with revalidation
+# This allows updates to propagate within a week
+# If you need instant updates, rename the file
+/images/*
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+# Favicon & Icons - Long cache (immutable, rarely changes)
+/favicon.svg
+  Cache-Control: public, max-age=31536000, immutable
+
+/favicon.ico
+  Cache-Control: public, max-age=31536000, immutable
+
+# Fonts - Long cache (if self-hosted)
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
+
+# HTML pages - Short cache, revalidate
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+# RSS & Sitemap - Short cache
+/rss.xml
+  Cache-Control: public, max-age=3600, must-revalidate
+  Content-Type: application/rss+xml; charset=utf-8
+
+/sitemap*.xml
+  Cache-Control: public, max-age=3600, must-revalidate
+
+# robots.txt - Short cache
+/robots.txt
+  Cache-Control: public, max-age=86400, must-revalidate

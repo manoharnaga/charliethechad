@@ -1,0 +1,149 @@
+---
+/**
+ * BookPreviewSection - Book preview/sample section
+ */
+
+interface Props {
+  content: string;
+  previewLink?: string;
+  title?: string;
+}
+
+const {
+  content,
+  previewLink,
+  title = 'Preview',
+} = Astro.props;
+
+// Limit preview content
+const previewContent = content.slice(0, 2000);
+const hasMore = content.length > 2000;
+---
+
+<section class="preview-section" aria-labelledby="preview-title">
+  <h3 id="preview-title" class="preview-title">{title}</h3>
+  
+  <div class="preview-card">
+    <div class="preview-content prose">
+      <Fragment set:html={previewContent} />
+      {hasMore && <span class="preview-fade"></span>}
+    </div>
+    
+    {previewLink && (
+      <div class="preview-cta">
+        <a href={previewLink} class="preview-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+          </svg>
+          Continue Reading
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14"/>
+            <path d="m12 5 7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+    )}
+  </div>
+</section>
+
+<style>
+  .preview-section {
+    padding: var(--space-12) 0;
+  }
+  
+  .preview-title {
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: var(--space-8);
+    position: relative;
+  }
+  
+  .preview-title::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: var(--color-accent);
+    border-radius: var(--radius-full);
+  }
+  
+  .preview-card {
+    max-width: var(--max-width-prose);
+    margin: 0 auto;
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+  }
+  
+  .preview-content {
+    position: relative;
+    padding: var(--space-8);
+    max-height: 400px;
+    overflow: hidden;
+  }
+  
+  .preview-content :global(p) {
+    margin-bottom: var(--space-4);
+    line-height: var(--leading-loose);
+    color: var(--color-text);
+    font-size: var(--text-lg);
+  }
+  
+  .preview-content :global(p:first-child::first-letter) {
+    font-size: 3em;
+    font-weight: 700;
+    float: left;
+    line-height: 1;
+    margin-right: var(--space-2);
+    color: var(--color-accent);
+  }
+  
+  .preview-fade {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 150px;
+    background: linear-gradient(
+      to bottom,
+      transparent 0%,
+      var(--color-bg-elevated) 100%
+    );
+    pointer-events: none;
+  }
+  
+  .preview-cta {
+    padding: var(--space-6);
+    background: var(--color-bg-alt);
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    justify-content: center;
+  }
+  
+  .preview-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-4) var(--space-8);
+    background: linear-gradient(135deg, var(--color-accent) 0%, #1d4ed8 100%);
+    color: white;
+    font-size: var(--text-base);
+    font-weight: 600;
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+  }
+  
+  .preview-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
+    color: white;
+  }
+</style>

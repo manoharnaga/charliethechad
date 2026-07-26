@@ -1,0 +1,441 @@
+---
+/**
+ * BookPageHero - Full hero section for dedicated book page
+ */
+
+import BookBadge from './BookBadge.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  tagline?: string;
+  coverImage: string;
+  publishDate?: Date;
+  badge?: string;
+  status?: 'upcoming' | 'available' | 'bestseller';
+  previewLink?: string;
+  amazonLink?: string;
+  goodreadsLink?: string;
+  otherRetailers?: { name: string; url: string }[];
+  pageCount?: number;
+  genres?: string[];
+}
+
+const {
+  title,
+  description,
+  tagline,
+  coverImage,
+  publishDate,
+  badge = 'NEW RELEASE',
+  status = 'available',
+  previewLink,
+  amazonLink,
+  goodreadsLink,
+  otherRetailers = [],
+  pageCount,
+  genres = [],
+} = Astro.props;
+
+const formattedDate = publishDate?.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+
+const badgeVariant = {
+  'upcoming': 'coming-soon',
+  'available': 'new-release',
+  'bestseller': 'bestseller',
+}[status] as 'new-release' | 'bestseller' | 'coming-soon';
+---
+
+<section class="book-page-hero">
+  <div class="hero-bg-pattern"></div>
+  
+  <div class="hero-container">
+    <div class="hero-content">
+      <!-- Cover Section -->
+      <div class="hero-cover-section">
+        <div class="cover-wrapper">
+          <div class="cover-frame">
+            <img 
+              src={coverImage} 
+              alt={`${title} book cover`}
+              loading="eager"
+              fetchpriority="high"
+            />
+          </div>
+          <div class="cover-reflection"></div>
+        </div>
+      </div>
+      
+      <!-- Info Section -->
+      <div class="hero-info-section">
+        <div class="hero-badges">
+          <BookBadge variant={badgeVariant} text={badge} size="lg" />
+        </div>
+        
+        <h1 class="hero-title">{title}</h1>
+        
+        {tagline && (
+          <p class="hero-tagline">{tagline}</p>
+        )}
+        
+        <p class="hero-description">{description}</p>
+        
+        <div class="hero-meta">
+          {formattedDate && (
+            <div class="meta-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
+                <line x1="16" x2="16" y1="2" y2="6"/>
+                <line x1="8" x2="8" y1="2" y2="6"/>
+                <line x1="3" x2="21" y1="10" y2="10"/>
+              </svg>
+              <span>Released {formattedDate}</span>
+            </div>
+          )}
+          
+          {pageCount && (
+            <div class="meta-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+              </svg>
+              <span>{pageCount} pages</span>
+            </div>
+          )}
+        </div>
+        
+        {genres.length > 0 && (
+          <div class="hero-genres">
+            {genres.map((genre) => (
+              <span class="genre-tag">{genre}</span>
+            ))}
+          </div>
+        )}
+        
+        <div class="hero-actions">
+          {previewLink && (
+            <a href={previewLink} class="hero-btn hero-btn-primary">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+                <path d="M8 7h6"/>
+                <path d="M8 11h8"/>
+              </svg>
+              Read Free Preview
+            </a>
+          )}
+          
+          {amazonLink && (
+            <a href={amazonLink} class="hero-btn hero-btn-amazon" target="_blank" rel="noopener">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="8" cy="21" r="1"/>
+                <circle cx="19" cy="21" r="1"/>
+                <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
+              </svg>
+              Buy on Amazon
+            </a>
+          )}
+        </div>
+        
+        <div class="secondary-links">
+          {goodreadsLink && (
+            <a href={goodreadsLink} class="secondary-link" target="_blank" rel="noopener">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+              </svg>
+              Add to Goodreads
+            </a>
+          )}
+          
+          {otherRetailers.map((retailer) => (
+            <a href={retailer.url} class="secondary-link" target="_blank" rel="noopener">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" x2="21" y1="14" y2="3"/>
+              </svg>
+              {retailer.name}
+            </a>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .book-page-hero {
+    position: relative;
+    padding: var(--space-16) 0;
+    background: var(--color-bg-alt);
+    overflow: hidden;
+  }
+  
+  .hero-bg-pattern {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      radial-gradient(ellipse at 0% 50%, rgba(37, 99, 235, 0.1) 0%, transparent 50%),
+      radial-gradient(ellipse at 100% 0%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 100%, rgba(37, 99, 235, 0.05) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  
+  [data-theme="dark"] .hero-bg-pattern {
+    background: 
+      radial-gradient(ellipse at 0% 50%, rgba(37, 99, 235, 0.2) 0%, transparent 50%),
+      radial-gradient(ellipse at 100% 0%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 100%, rgba(37, 99, 235, 0.1) 0%, transparent 50%);
+  }
+  
+  .hero-container {
+    max-width: var(--max-width-wide);
+    margin: 0 auto;
+    padding: 0 var(--space-6);
+    position: relative;
+  }
+  
+  .hero-content {
+    display: grid;
+    gap: var(--space-12);
+    align-items: center;
+  }
+  
+  @media (min-width: 768px) {
+    .hero-content {
+      grid-template-columns: 350px 1fr;
+      gap: var(--space-16);
+    }
+  }
+  
+  /* Cover Section */
+  .hero-cover-section {
+    display: flex;
+    justify-content: center;
+  }
+  
+  .cover-wrapper {
+    position: relative;
+    perspective: 1000px;
+  }
+  
+  .cover-frame {
+    width: 280px;
+    max-width: 100%;
+    aspect-ratio: 3 / 4;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: 
+      0 25px 50px -12px rgba(0, 0, 0, 0.25),
+      0 0 0 1px rgba(0, 0, 0, 0.05),
+      -20px 20px 40px rgba(0, 0, 0, 0.15);
+    transform: rotateY(-5deg);
+    transition: transform var(--transition-base);
+  }
+  
+  .cover-frame:hover {
+    transform: rotateY(0deg);
+  }
+  
+  .cover-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .cover-reflection {
+    position: absolute;
+    bottom: -40px;
+    left: 5%;
+    right: 5%;
+    height: 40px;
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.1) 0%,
+      transparent 100%
+    );
+    transform: scaleY(-1) rotateY(-5deg);
+    filter: blur(4px);
+    opacity: 0.5;
+    border-radius: var(--radius-lg);
+  }
+  
+  @media (min-width: 768px) {
+    .cover-frame {
+      width: 320px;
+    }
+  }
+  
+  /* Info Section */
+  .hero-info-section {
+    text-align: center;
+  }
+  
+  @media (min-width: 768px) {
+    .hero-info-section {
+      text-align: left;
+    }
+  }
+  
+  .hero-badges {
+    margin-bottom: var(--space-4);
+  }
+  
+  .hero-title {
+    font-size: clamp(var(--text-4xl), 6vw, var(--text-5xl));
+    font-weight: 800;
+    line-height: var(--leading-tight);
+    letter-spacing: -0.03em;
+    margin-bottom: var(--space-3);
+  }
+  
+  .hero-tagline {
+    font-size: var(--text-xl);
+    color: var(--color-accent);
+    font-style: italic;
+    margin-bottom: var(--space-5);
+  }
+  
+  .hero-description {
+    font-size: var(--text-lg);
+    color: var(--color-text-secondary);
+    line-height: var(--leading-relaxed);
+    margin-bottom: var(--space-6);
+    max-width: 550px;
+  }
+  
+  @media (min-width: 768px) {
+    .hero-description {
+      margin-left: 0;
+      margin-right: auto;
+    }
+  }
+  
+  .hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    margin-bottom: var(--space-5);
+    justify-content: center;
+  }
+  
+  @media (min-width: 768px) {
+    .hero-meta {
+      justify-content: flex-start;
+    }
+  }
+  
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+  }
+  
+  .hero-genres {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-bottom: var(--space-6);
+    justify-content: center;
+  }
+  
+  @media (min-width: 768px) {
+    .hero-genres {
+      justify-content: flex-start;
+    }
+  }
+  
+  .genre-tag {
+    padding: var(--space-1) var(--space-3);
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    font-size: var(--text-xs);
+    font-weight: 500;
+    color: var(--color-text-secondary);
+  }
+  
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-bottom: var(--space-5);
+    justify-content: center;
+  }
+  
+  @media (min-width: 768px) {
+    .hero-actions {
+      justify-content: flex-start;
+    }
+  }
+  
+  .hero-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-4) var(--space-6);
+    font-size: var(--text-base);
+    font-weight: 600;
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+  }
+  
+  .hero-btn-primary {
+    background: linear-gradient(135deg, var(--color-accent) 0%, #1d4ed8 100%);
+    color: white;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+  }
+  
+  .hero-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+    color: white;
+  }
+  
+  .hero-btn-amazon {
+    background: #ff9900;
+    color: #111;
+    box-shadow: 0 4px 14px rgba(255, 153, 0, 0.3);
+  }
+  
+  .hero-btn-amazon:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 153, 0, 0.4);
+    color: #111;
+  }
+  
+  .secondary-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    justify-content: center;
+  }
+  
+  @media (min-width: 768px) {
+    .secondary-links {
+      justify-content: flex-start;
+    }
+  }
+  
+  .secondary-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-sm);
+    color: var(--color-text-tertiary);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+  }
+  
+  .secondary-link:hover {
+    color: var(--color-accent);
+  }
+</style>

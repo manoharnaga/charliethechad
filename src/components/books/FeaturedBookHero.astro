@@ -1,0 +1,495 @@
+---
+/**
+ * FeaturedBookHero - Premium homepage hero section for featured book
+ * 
+ * Features:
+ * - Professional book launch design
+ * - Desktop: cover left, content right
+ * - Mobile: stacked vertically
+ * - Strong typography hierarchy
+ * - Elegant card styling
+ * - Accessible and responsive
+ */
+
+interface Props {
+  title: string;
+  description: string;
+  tagline?: string;
+  coverImage: string;
+  publishDate?: Date;
+  badge?: string;
+  previewLink?: string;
+  amazonLink?: string;
+  goodreadsLink?: string;
+  themes?: string[];
+  status?: 'upcoming' | 'available' | 'bestseller';
+}
+
+const {
+  title,
+  description,
+  tagline,
+  coverImage,
+  publishDate,
+  badge = 'NEW RELEASE',
+  previewLink,
+  amazonLink,
+  goodreadsLink,
+  themes = [],
+  status = 'available',
+} = Astro.props;
+
+const formattedDate = publishDate?.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+
+const statusLabels = {
+  upcoming: 'Coming Soon',
+  available: 'Available Now',
+  bestseller: 'Bestseller',
+};
+---
+
+<section class="featured-book-hero" aria-labelledby="featured-book-title">
+  <div class="hero-container">
+    <div class="hero-background"></div>
+    
+    <div class="hero-content">
+      <!-- Book Cover -->
+      <div class="book-cover-wrapper">
+        <div class="book-cover">
+          <img 
+            src={coverImage} 
+            alt={`${title} book cover`}
+            loading="eager"
+            fetchpriority="high"
+          />
+          <div class="book-spine"></div>
+        </div>
+        <div class="book-shadow"></div>
+      </div>
+      
+      <!-- Book Details -->
+      <div class="book-details">
+        <div class="book-meta-top">
+          <span class="book-badge">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+            {badge}
+          </span>
+          {status !== 'available' && (
+            <span class="book-status" data-status={status}>
+              {statusLabels[status]}
+            </span>
+          )}
+        </div>
+        
+        <h2 class="book-title" id="featured-book-title">{title}</h2>
+        
+        {tagline && (
+          <p class="book-tagline">{tagline}</p>
+        )}
+        
+        <p class="book-description">{description}</p>
+        
+        {formattedDate && (
+          <div class="book-publish-info">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
+              <line x1="16" x2="16" y1="2" y2="6"/>
+              <line x1="8" x2="8" y1="2" y2="6"/>
+              <line x1="3" x2="21" y1="10" y2="10"/>
+            </svg>
+            <span>Released {formattedDate}</span>
+          </div>
+        )}
+        
+        {themes.length > 0 && (
+          <div class="book-themes">
+            {themes.slice(0, 4).map((theme) => (
+              <span class="theme-tag">{theme}</span>
+            ))}
+          </div>
+        )}
+        
+        <div class="book-actions">
+          {previewLink && (
+            <a href={previewLink} class="btn-hero btn-primary">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+                <path d="M8 7h6"/>
+                <path d="M8 11h8"/>
+              </svg>
+              Read Free Preview
+            </a>
+          )}
+          {amazonLink && (
+            <a href={amazonLink} class="btn-hero btn-secondary" target="_blank" rel="noopener">
+              Buy on Amazon
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" x2="21" y1="14" y2="3"/>
+              </svg>
+            </a>
+          )}
+        </div>
+        
+        {goodreadsLink && (
+          <div class="secondary-links">
+            <a href={goodreadsLink} class="link-subtle" target="_blank" rel="noopener">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+              </svg>
+              Add to Goodreads
+            </a>
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .featured-book-hero {
+    position: relative;
+    padding: var(--space-16) 0;
+    overflow: hidden;
+  }
+  
+  .hero-container {
+    max-width: var(--max-width-content);
+    margin: 0 auto;
+    padding: 0 var(--space-6);
+    position: relative;
+  }
+  
+  .hero-background {
+    position: absolute;
+    top: -50%;
+    left: -20%;
+    right: -20%;
+    bottom: -50%;
+    background: 
+      radial-gradient(ellipse at 30% 40%, rgba(37, 99, 235, 0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 70% 60%, rgba(99, 102, 241, 0.06) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: -1;
+  }
+  
+  [data-theme="dark"] .hero-background {
+    background: 
+      radial-gradient(ellipse at 30% 40%, rgba(37, 99, 235, 0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 70% 60%, rgba(99, 102, 241, 0.1) 0%, transparent 50%);
+  }
+  
+  .hero-content {
+    display: grid;
+    gap: var(--space-12);
+    align-items: center;
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-10);
+    box-shadow: 
+      0 4px 6px -1px rgba(0, 0, 0, 0.05),
+      0 20px 25px -5px rgba(0, 0, 0, 0.05),
+      0 0 0 1px rgba(0, 0, 0, 0.02);
+  }
+  
+  [data-theme="dark"] .hero-content {
+    box-shadow: 
+      0 4px 6px -1px rgba(0, 0, 0, 0.2),
+      0 20px 25px -5px rgba(0, 0, 0, 0.2);
+  }
+  
+  @media (min-width: 768px) {
+    .hero-content {
+      grid-template-columns: 300px 1fr;
+      gap: var(--space-12);
+      padding: var(--space-12);
+    }
+  }
+  
+  /* Book Cover */
+  .book-cover-wrapper {
+    position: relative;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .book-cover {
+    position: relative;
+    width: 240px;
+    max-width: 100%;
+    aspect-ratio: 3 / 4;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: 
+      0 25px 50px -12px rgba(0, 0, 0, 0.25),
+      0 0 0 1px rgba(0, 0, 0, 0.05);
+    transform: perspective(1000px) rotateY(-5deg);
+    transition: transform var(--transition-base);
+  }
+  
+  .book-cover:hover {
+    transform: perspective(1000px) rotateY(0deg);
+  }
+  
+  .book-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .book-spine {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(
+      to right,
+      rgba(0, 0, 0, 0.15),
+      rgba(0, 0, 0, 0.05)
+    );
+  }
+  
+  .book-shadow {
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    height: 20px;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(0, 0, 0, 0.2) 0%,
+      transparent 70%
+    );
+    filter: blur(8px);
+    z-index: -1;
+  }
+  
+  @media (min-width: 768px) {
+    .book-cover {
+      width: 280px;
+    }
+  }
+  
+  /* Book Details */
+  .book-details {
+    text-align: center;
+  }
+  
+  @media (min-width: 768px) {
+    .book-details {
+      text-align: left;
+    }
+  }
+  
+  .book-meta-top {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+    justify-content: center;
+  }
+  
+  @media (min-width: 768px) {
+    .book-meta-top {
+      justify-content: flex-start;
+    }
+  }
+  
+  .book-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: white;
+    font-size: var(--text-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: var(--radius-full);
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+  }
+  
+  .book-status {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-tertiary);
+  }
+  
+  .book-status[data-status="upcoming"] {
+    color: #f59e0b;
+  }
+  
+  .book-status[data-status="bestseller"] {
+    color: #10b981;
+  }
+  
+  .book-title {
+    font-size: clamp(var(--text-3xl), 5vw, var(--text-4xl));
+    font-weight: 800;
+    line-height: var(--leading-tight);
+    margin-bottom: var(--space-3);
+    letter-spacing: -0.03em;
+  }
+  
+  .book-tagline {
+    font-size: var(--text-lg);
+    color: var(--color-accent);
+    font-style: italic;
+    margin-bottom: var(--space-4);
+  }
+  
+  .book-description {
+    font-size: var(--text-lg);
+    color: var(--color-text-secondary);
+    line-height: var(--leading-relaxed);
+    margin-bottom: var(--space-5);
+    max-width: 500px;
+  }
+  
+  @media (min-width: 768px) {
+    .book-description {
+      margin-left: 0;
+      margin-right: auto;
+    }
+  }
+  
+  .book-publish-info {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-sm);
+    color: var(--color-text-tertiary);
+    margin-bottom: var(--space-5);
+  }
+  
+  .book-themes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-bottom: var(--space-6);
+    justify-content: center;
+  }
+  
+  @media (min-width: 768px) {
+    .book-themes {
+      justify-content: flex-start;
+    }
+  }
+  
+  .theme-tag {
+    padding: var(--space-1) var(--space-3);
+    background: var(--color-bg-alt);
+    color: var(--color-text-secondary);
+    font-size: var(--text-xs);
+    font-weight: 500;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--color-border);
+  }
+  
+  .book-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+    justify-content: center;
+  }
+  
+  @media (min-width: 768px) {
+    .book-actions {
+      justify-content: flex-start;
+    }
+  }
+  
+  .btn-hero {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-4) var(--space-6);
+    font-size: var(--text-base);
+    font-weight: 600;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+    text-decoration: none;
+  }
+  
+  .btn-primary {
+    background: linear-gradient(135deg, var(--color-accent) 0%, #1d4ed8 100%);
+    color: white;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+  }
+  
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
+    color: white;
+  }
+  
+  .btn-secondary {
+    background: var(--color-bg);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+  }
+  
+  .btn-secondary:hover {
+    border-color: var(--color-text-secondary);
+    background: var(--color-bg-alt);
+    color: var(--color-text);
+  }
+  
+  .secondary-links {
+    display: flex;
+    gap: var(--space-4);
+    justify-content: center;
+  }
+  
+  @media (min-width: 768px) {
+    .secondary-links {
+      justify-content: flex-start;
+    }
+  }
+  
+  .link-subtle {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-sm);
+    color: var(--color-text-tertiary);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+  }
+  
+  .link-subtle:hover {
+    color: var(--color-accent);
+  }
+  
+  /* Animation */
+  @media (prefers-reduced-motion: no-preference) {
+    .featured-book-hero {
+      animation: fadeIn 0.6s ease-out;
+    }
+    
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  }
+</style>

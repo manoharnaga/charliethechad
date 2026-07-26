@@ -1,0 +1,442 @@
+---
+import Base from '@/layouts/Base.astro';
+import Header from '@/components/Header.astro';
+import Footer from '@/components/Footer.astro';
+import BlogCard from '@/components/BlogCard.astro';
+import BookAnnouncementBanner from '@/components/books/BookAnnouncementBanner.astro';
+import FeaturedBookHero from '@/components/books/FeaturedBookHero.astro';
+import BookStickyPromo from '@/components/books/BookStickyPromo.astro';
+import { getCollection } from 'astro:content';
+import { SITE } from '@/config/site';
+
+// Get all non-draft posts sorted by date
+const allPosts = (await getCollection('blog', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const latestPosts = allPosts.slice(0, SITE.content.postsOnHomepage);
+const featuredPosts = allPosts.filter(post => post.data.featured).slice(0, 3);
+const popularPosts = allPosts.slice(0, 4);
+
+// Get featured book if exists
+let featuredBook = null;
+try {
+  const books = await getCollection('books');
+  featuredBook = books.find(book => book.data.featured);
+} catch (e) {
+  // Books collection may not exist yet
+}
+
+const rotatingWords = SITE.content.categories;
+
+// Check if book promotion is enabled
+const showBookPromo = featuredBook && featuredBook.data.promotion?.enabled !== false;
+const showAnnouncementBanner = showBookPromo && featuredBook.data.promotion?.announcementBanner !== false;
+const showHomepageHero = showBookPromo && featuredBook.data.promotion?.homepageHero !== false;
+const showStickyWidget = showBookPromo && featuredBook.data.promotion?.stickyWidget !== false;
+---
+
+<Base title="Home" description={SITE.description}>
+  <!-- Announcement Banner -->
+  {showAnnouncementBanner && featuredBook && (
+    <BookAnnouncementBanner
+      title={featuredBook.data.title}
+      badge={featuredBook.data.promotion?.badge}
+      message={featuredBook.data.promotion?.launchMessage}
+      previewLink={featuredBook.data.previewLink}
+      buyLink={featuredBook.data.amazonLink}
+    />
+  )}
+  
+  <Header />
+  
+  <main>
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="hero-content">
+        <h1 class="hero-title">{SITE.name}</h1>
+        <p class="hero-subtitle">
+          Thoughts on
+          <span class="rotating-words" id="rotating-words">
+            {rotatingWords.map((word, index) => (
+              <span class:list={['word', { active: index === 0 }]} data-index={index}>
+                {word}
+              </span>
+            ))}
+          </span>
+        </p>
+        <a href="/blog" class="hero-cta">
+          Latest Articles
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14"/>
+            <path d="m12 5 7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+    </section>
+    
+    <!-- Featured Book Hero Section -->
+    {showHomepageHero && featuredBook && (
+      <FeaturedBookHero
+        title={featuredBook.data.title}
+        description={featuredBook.data.description}
+        tagline={featuredBook.data.tagline}
+        coverImage={featuredBook.data.coverImage}
+        publishDate={featuredBook.data.publishDate}
+        badge={featuredBook.data.promotion?.badge}
+        previewLink={featuredBook.data.previewLink}
+        amazonLink={featuredBook.data.amazonLink}
+        goodreadsLink={featuredBook.data.goodreadsLink}
+        themes={featuredBook.data.themes}
+        status={featuredBook.data.status}
+      />
+    )}
+    
+    <!-- Featured Posts Section -->
+    {featuredPosts.length > 0 && (
+      <section class="section">
+        <div class="container">
+          <h2 class="section-title">Featured</h2>
+          <div class="featured-posts">
+            {featuredPosts.map(post => (
+              <BlogCard
+                title={post.data.title}
+                description={post.data.description}
+                slug={post.id}
+                pubDate={post.data.pubDate}
+                coverImage={post.data.coverImage}
+                tags={post.data.tags}
+                readingTime={post.data.readingTime}
+                variant="featured"
+                featured={true}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+    )}
+    
+    <!-- Latest Posts Section -->
+    <section class="section">
+      <div class="container">
+        <h2 class="section-title">Latest Posts</h2>
+        <div class="latest-posts">
+          {latestPosts.map(post => (
+            <BlogCard
+              title={post.data.title}
+              description={post.data.description}
+              slug={post.id}
+              pubDate={post.data.pubDate}
+              readingTime={post.data.readingTime}
+              variant="compact"
+            />
+          ))}
+        </div>
+        <a href="/blog" class="view-all-link">
+          View all articles
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14"/>
+            <path d="m12 5 7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+    </section>
+    
+    <!-- Popular Articles Section -->
+    {popularPosts.length > 0 && (
+      <section class="section">
+        <div class="container">
+          <h2 class="section-title">Popular Articles</h2>
+          <div class="posts-grid">
+            {popularPosts.map(post => (
+              <BlogCard
+                title={post.data.title}
+                description={post.data.description}
+                slug={post.id}
+                pubDate={post.data.pubDate}
+                coverImage={post.data.coverImage}
+                tags={post.data.tags}
+                readingTime={post.data.readingTime}
+                variant="default"
+                featured={post.data.featured}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+    )}
+  </main>
+  
+  <Footer />
+  
+  <!-- Sticky Book Promo Widget -->
+  {showStickyWidget && featuredBook && (
+    <BookStickyPromo
+      title={featuredBook.data.title}
+      coverImage={featuredBook.data.coverImage}
+      previewLink={featuredBook.data.previewLink}
+      buyLink={featuredBook.data.amazonLink}
+    />
+  )}
+</Base>
+
+<style>
+  /* Hero Section */
+  .hero {
+    min-height: calc(60vh - var(--header-height));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: var(--space-16) var(--space-6);
+  }
+  
+  .hero-content {
+    max-width: 600px;
+    animation: fadeInUp var(--transition-slow) ease-out;
+  }
+  
+  .hero-title {
+    font-size: clamp(var(--text-4xl), 8vw, var(--text-5xl));
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin-bottom: var(--space-4);
+  }
+  
+  .hero-subtitle {
+    font-size: var(--text-xl);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-8);
+    line-height: var(--leading-relaxed);
+  }
+  
+  .rotating-words {
+    display: inline-block;
+    position: relative;
+    height: 1.5em;
+    overflow: hidden;
+    vertical-align: bottom;
+    min-width: 140px;
+  }
+  
+  .rotating-words .word {
+    position: absolute;
+    left: 0;
+    right: 0;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    color: var(--color-accent);
+    font-weight: 600;
+  }
+  
+  .rotating-words .word.active {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  .hero-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-4) var(--space-6);
+    background-color: var(--color-text);
+    color: var(--color-bg);
+    font-weight: 500;
+    border-radius: var(--radius-full);
+    transition: transform var(--transition-fast), 
+                box-shadow var(--transition-fast);
+  }
+  
+  .hero-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+  
+  [data-theme="dark"] .hero-cta {
+    background-color: var(--color-bg-elevated);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+  }
+  
+  /* Sections */
+  .section {
+    padding: var(--space-20) 0;
+  }
+  
+  .section-alt {
+    background-color: var(--color-bg-alt);
+  }
+  
+  .container {
+    max-width: var(--max-width-content);
+    margin: 0 auto;
+    padding: 0 var(--space-6);
+  }
+  
+  .section-title {
+    font-size: var(--text-2xl);
+    font-weight: 600;
+    margin-bottom: var(--space-8);
+    position: relative;
+    display: inline-block;
+  }
+  
+  .section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 40px;
+    height: 3px;
+    background-color: var(--color-accent);
+    border-radius: var(--radius-full);
+  }
+  
+  /* Latest Posts */
+  .latest-posts {
+    max-width: var(--max-width-prose);
+  }
+  
+  .view-all-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-top: var(--space-8);
+    font-weight: 500;
+    color: var(--color-accent);
+    transition: gap var(--transition-fast);
+  }
+  
+  .view-all-link:hover {
+    gap: var(--space-3);
+  }
+  
+  /* Featured Book */
+  .featured-book {
+    display: grid;
+    gap: var(--space-10);
+    align-items: center;
+  }
+  
+  @media (min-width: 768px) {
+    .featured-book {
+      grid-template-columns: 280px 1fr;
+    }
+  }
+  
+  .book-image {
+    aspect-ratio: 3 / 4;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+  }
+  
+  .book-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .book-title {
+    font-size: var(--text-3xl);
+    font-weight: 700;
+    margin-bottom: var(--space-4);
+  }
+  
+  .book-description {
+    font-size: var(--text-lg);
+    color: var(--color-text-secondary);
+    line-height: var(--leading-relaxed);
+    margin-bottom: var(--space-6);
+  }
+  
+  .book-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+  }
+  
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-3) var(--space-6);
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    transition: transform var(--transition-fast), 
+                box-shadow var(--transition-fast);
+  }
+  
+  .btn:hover {
+    transform: translateY(-1px);
+  }
+  
+  .btn-primary {
+    background-color: var(--color-accent);
+    color: white;
+  }
+  
+  .btn-primary:hover {
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  }
+  
+  .btn-secondary {
+    background-color: transparent;
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+  }
+  
+  .btn-secondary:hover {
+    border-color: var(--color-text-secondary);
+  }
+  
+  /* Posts Grid */
+  .posts-grid {
+    display: grid;
+    gap: var(--space-6);
+  }
+  
+  /* Featured Posts */
+  .featured-posts {
+    display: grid;
+    gap: var(--space-8);
+  }
+  
+  @media (min-width: 900px) {
+    .featured-posts {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    /* A lone featured post spans the full width for extra emphasis. */
+    .featured-posts > :only-child {
+      grid-column: 1 / -1;
+    }
+  }
+  
+  @media (min-width: 640px) {
+    .posts-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .posts-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>
+
+<script>
+  // Rotating words animation
+  const rotatingWords = document.getElementById('rotating-words');
+  if (rotatingWords) {
+    const words = rotatingWords.querySelectorAll('.word');
+    let currentIndex = 0;
+    
+    setInterval(() => {
+      words[currentIndex].classList.remove('active');
+      currentIndex = (currentIndex + 1) % words.length;
+      words[currentIndex].classList.add('active');
+    }, 2500);
+  }
+</script>

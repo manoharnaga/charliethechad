@@ -1,0 +1,204 @@
+---
+import { SITE } from '@/config/site';
+
+const year = new Date().getFullYear();
+
+const topics = SITE.content.categories.slice(0, 4).map(cat => ({
+  label: cat,
+  href: `/blog?category=${cat.toLowerCase()}`
+}));
+
+const links = SITE.nav.footer;
+
+// Build socials array from config (only include those with URLs)
+const socialIcons: Record<string, string> = {
+  github: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>',
+  twitter: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l11.733 16h4.267l-11.733 -16z"/><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"/></svg>',
+  linkedin: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>',
+  instagram: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>',
+  youtube: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path d="m10 15 5-3-5-3z"/></svg>',
+};
+
+const socials = Object.entries(SITE.social)
+  .filter(([key, value]) => value && key !== 'twitterHandle' && socialIcons[key])
+  .map(([key, href]) => ({
+    label: key.charAt(0).toUpperCase() + key.slice(1),
+    href: href as string,
+    icon: socialIcons[key]
+  }));
+---
+
+<footer class="footer">
+  <div class="footer-container">
+    <div class="footer-main">
+      <div class="footer-brand">
+        <a href="/" class="footer-logo">{SITE.name}</a>
+        <p class="footer-tagline">{SITE.tagline}</p>
+      </div>
+      
+      <div class="footer-links-grid">
+        <div class="footer-section">
+          <h4>Topics</h4>
+          <ul>
+            {topics.map(topic => (
+              <li><a href={topic.href}>{topic.label}</a></li>
+            ))}
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h4>Links</h4>
+          <ul>
+            {links.map(link => (
+              <li><a href={link.href}>{link.label}</a></li>
+            ))}
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h4>Connect</h4>
+          <div class="social-links">
+            {socials.map(social => (
+              <a 
+                href={social.href} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                aria-label={social.label}
+                class="social-link"
+              >
+                <Fragment set:html={social.icon} />
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="footer-bottom">
+      <p>&copy; {year} {SITE.name}. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    background-color: var(--color-bg-alt);
+    border-top: 1px solid var(--color-border);
+    margin-top: var(--space-24);
+  }
+  
+  .footer-container {
+    max-width: var(--max-width-wide);
+    margin: 0 auto;
+    padding: var(--space-16) var(--space-6) var(--space-8);
+  }
+  
+  .footer-main {
+    display: grid;
+    gap: var(--space-12);
+  }
+  
+  @media (min-width: 768px) {
+    .footer-main {
+      grid-template-columns: 1fr 2fr;
+      gap: var(--space-16);
+    }
+  }
+  
+  .footer-brand {
+    max-width: 280px;
+  }
+  
+  .footer-logo {
+    font-size: var(--text-xl);
+    font-weight: 700;
+    color: var(--color-text);
+    letter-spacing: -0.02em;
+  }
+  
+  .footer-logo:hover {
+    color: var(--color-accent);
+  }
+  
+  .footer-tagline {
+    margin-top: var(--space-3);
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+    line-height: var(--leading-relaxed);
+  }
+  
+  .footer-links-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-8);
+  }
+  
+  @media (min-width: 640px) {
+    .footer-links-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  
+  .footer-section h4 {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-text);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--space-4);
+  }
+  
+  .footer-section ul {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    list-style: none;
+  }
+  
+  .footer-section a {
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+    transition: color var(--transition-fast);
+  }
+  
+  .footer-section a:hover {
+    color: var(--color-text);
+  }
+  
+  .social-links {
+    display: flex;
+    gap: var(--space-3);
+  }
+  
+  .social-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-md);
+    color: var(--color-text-secondary);
+    background-color: var(--color-bg);
+    transition: color var(--transition-fast), 
+                background-color var(--transition-fast),
+                transform var(--transition-fast);
+  }
+  
+  .social-link:hover {
+    color: var(--color-text);
+    background-color: var(--color-border-light);
+    transform: translateY(-2px);
+  }
+  
+  .footer-bottom {
+    margin-top: var(--space-12);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--color-border);
+    text-align: center;
+  }
+  
+  .footer-bottom p {
+    font-size: var(--text-sm);
+    color: var(--color-text-tertiary);
+  }
+</style>
