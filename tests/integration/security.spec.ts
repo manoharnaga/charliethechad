@@ -245,6 +245,8 @@ test.describe('Security Headers Configuration', () => {
     expect(headersFile).toMatch(/script-src[^;]*https:\/\/www\.googletagmanager\.com/i);
     expect(headersFile).toMatch(/connect-src[^;]*https:\/\/www\.google-analytics\.com/i);
     expect(headersFile).toMatch(/connect-src[^;]*https:\/\/region1\.google-analytics\.com/i);
+    expect(headersFile).toMatch(/connect-src[^;]*https:\/\/analytics\.google\.com/i);
+    expect(headersFile).toMatch(/connect-src[^;]*https:\/\/www\.google\.com/i);
   });
 
   test('CSP allows Cloudflare Web Analytics resources', () => {
