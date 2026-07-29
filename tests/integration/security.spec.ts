@@ -246,6 +246,11 @@ test.describe('Security Headers Configuration', () => {
     expect(headersFile).toMatch(/connect-src[^;]*https:\/\/www\.google-analytics\.com/i);
     expect(headersFile).toMatch(/connect-src[^;]*https:\/\/region1\.google-analytics\.com/i);
   });
+
+  test('CSP allows Cloudflare Web Analytics resources', () => {
+    expect(headersFile).toMatch(/script-src[^;]*https:\/\/static\.cloudflareinsights\.com/i);
+    expect(headersFile).toMatch(/connect-src[^;]*https:\/\/cloudflareinsights\.com/i);
+  });
 });
 
 test.describe('No Sensitive Data Exposure', () => {
