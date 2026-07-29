@@ -4,9 +4,13 @@ description: "A loving family is torn apart by a sudden act of terror, and their
 tagline: "Some stories stay with you forever."
 coverImage: "/images/books/deathonfridays_compressed.png"
 publishDate: 2026-07-07
-amazonLink: "https://amazon.com/your-book"
-goodreadsLink: "https://goodreads.com/your-book"
 previewLink: "/books/death-on-fridays"
+# Store links are fully data-driven: add a URL for any store id defined in
+# src/config/retailers.ts. Empty/omitted stores are hidden automatically.
+retailers: {}
+formats:
+  - eBook
+language: "English"
 featured: false
 status: "available"
 themes:
@@ -32,8 +36,6 @@ promotion:
   launchMessage: "New release now available"
 seoDescription: "Death on Fridays is a gripping family drama about love, devastating loss, and survival. Follow a mother, father, and children as they face fear, grief, and the fight toward hope and paradise."
 ---
-
-# Death on Fridays!
 
 ## Book Overview
 

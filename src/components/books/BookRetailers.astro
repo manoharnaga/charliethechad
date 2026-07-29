@@ -1,0 +1,313 @@
+---
+/**
+ * BookRetailers - "Available Worldwide" store grid + "Community & Reviews".
+ *
+ * Fully data-driven and reusable: pass the book's `retailers` object and the
+ * component renders only the stores that have a URL, in the order defined in
+ * `src/config/retailers.ts`. Goodreads (and any `community` store) is shown
+ * separately below the buy grid.
+ *
+ * Icons are inline SVG tiles - no icon fonts, no external requests.
+ */
+import { RETAILERS } from '@/config/retailers';
+
+interface Props {
+  /** Map of retailer id -> URL (from frontmatter). Empty ids are hidden. */
+  retailers?: Record<string, string | undefined>;
+  /** Book title, used to build accessible aria-labels. */
+  bookTitle: string;
+}
+
+const { retailers = {}, bookTitle } = Astro.props;
+
+// Keep central order; drop stores without a configured URL.
+const configured = RETAILERS.map((r) => ({ ...r, url: retailers[r.id] })).filter(
+  (r): r is typeof r & { url: string } =>
+    typeof r.url === 'string' && r.url.trim().length > 0
+);
+
+const stores = configured.filter((r) => !r.community);
+const community = configured.filter((r) => r.community);
+
+const relFor = (sponsored?: boolean) =>
+  sponsored ? 'noopener noreferrer sponsored' : 'noopener noreferrer';
+---
+
+{stores.length > 0 && (
+  <section class="retailers" aria-labelledby="retailers-heading">
+    <div class="section-head">
+      <h2 id="retailers-heading">Available Worldwide</h2>
+      <span class="divider" aria-hidden="true"></span>
+      <p class="section-sub">Choose your preferred bookstore</p>
+    </div>
+
+    <nav class="retailer-grid" aria-label="Buy from online bookstores">
+      {stores.map((r) => (
+        <a
+          href={r.url}
+          target="_blank"
+          rel={relFor(r.sponsored)}
+          title={r.name}
+          aria-label={`Buy ${bookTitle} on ${r.name}`}
+          style={`--tile-bg:${r.bg};`}
+          class:list={['retailer-card', { 'is-light': r.border }]}
+        >
+          <span class="tile-glyph">
+            <svg viewBox="0 0 48 48" role="img" aria-hidden="true" focusable="false">
+              {r.svg ? (
+                <g transform="translate(9 9) scale(1.25)" set:html={r.svg} />
+              ) : (
+                <text
+                  x="24"
+                  y="25"
+                  text-anchor="middle"
+                  dominant-baseline="central"
+                  font-family={r.font ?? 'Inter, system-ui, sans-serif'}
+                  font-weight="800"
+                  font-size="26"
+                  fill={r.fg}
+                >
+                  {r.monogram}
+                </text>
+              )}
+            </svg>
+          </span>
+          {r.image && (
+            <img
+              class="tile-image"
+              src={r.image}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              onerror="this.remove()"
+            />
+          )}
+          <span class="tile-name">{r.name}</span>
+        </a>
+      ))}
+    </nav>
+  </section>
+)}
+
+{community.length > 0 && (
+  <section class="community" aria-labelledby="community-heading">
+    <h3 id="community-heading">Community &amp; Reviews</h3>
+    <nav class="retailer-grid community-grid" aria-label="Reader community and reviews">
+      {community.map((r) => (
+        <a
+          href={r.url}
+          target="_blank"
+          rel={relFor(r.sponsored)}
+          title={r.name}
+          aria-label={`Read reviews of ${bookTitle} on ${r.name}`}
+          style={`--tile-bg:${r.bg};`}
+          class:list={['retailer-card', { 'is-light': r.border }]}
+        >
+          <span class="tile-glyph">
+            <svg viewBox="0 0 48 48" role="img" aria-hidden="true" focusable="false">
+              {r.svg ? (
+                <g transform="translate(9 9) scale(1.25)" set:html={r.svg} />
+              ) : (
+                <text
+                  x="24"
+                  y="25"
+                  text-anchor="middle"
+                  dominant-baseline="central"
+                  font-family={r.font ?? 'Inter, system-ui, sans-serif'}
+                  font-weight="800"
+                  font-size="26"
+                  fill={r.fg}
+                >
+                  {r.monogram}
+                </text>
+              )}
+            </svg>
+          </span>
+          {r.image && (
+            <img
+              class="tile-image"
+              src={r.image}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              onerror="this.remove()"
+            />
+          )}
+          <span class="tile-name">{r.name}</span>
+        </a>
+      ))}
+    </nav>
+  </section>
+)}
+
+<style>
+  .retailers,
+  .community {
+    max-width: var(--max-width-wide);
+    margin: 0 auto;
+  }
+
+  .community {
+    margin-top: var(--space-10);
+  }
+
+  /* Section heading with divider */
+  .section-head {
+    text-align: center;
+    margin-bottom: var(--space-8);
+  }
+
+  .section-head h2 {
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0;
+  }
+
+  .divider {
+    display: block;
+    width: 56px;
+    height: 3px;
+    margin: var(--space-3) auto var(--space-2);
+    border-radius: var(--radius-full);
+    background: linear-gradient(90deg, var(--color-accent), var(--color-accent-hover));
+  }
+
+  .section-sub {
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+    margin: 0;
+  }
+
+  .community h3 {
+    font-size: var(--text-lg);
+    font-weight: 600;
+    text-align: center;
+    margin: 0 0 var(--space-5);
+    color: var(--color-text-secondary);
+  }
+
+  /* Responsive icon grid: touch-friendly, wraps to 3–4 cols on mobile */
+  .retailer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: var(--space-4);
+    justify-content: center;
+  }
+
+  .community-grid {
+    max-width: 120px;
+    margin: 0 auto;
+  }
+
+  /* Full-bleed brand tile = the card itself */
+  .retailer-card {
+    position: relative;
+    display: block;
+    aspect-ratio: 1 / 1;
+    border-radius: 18px;
+    background: var(--tile-bg);
+    box-shadow:
+      0 4px 12px rgba(0, 0, 0, 0.1),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+    overflow: hidden;
+    text-decoration: none;
+    transition:
+      transform var(--transition-base),
+      box-shadow var(--transition-base);
+  }
+
+  /* Light tiles (white/cream) need a darker hairline instead */
+  .retailer-card.is-light {
+    box-shadow:
+      0 4px 12px rgba(0, 0, 0, 0.08),
+      inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Centered glyph filling the tile */
+  .tile-glyph {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+  }
+
+  .tile-glyph svg {
+    width: 62%;
+    height: 62%;
+    overflow: visible;
+  }
+
+  /* Local brand image: full-bleed, covers the fallback glyph beneath it.
+     If the file 404s, its onerror removes it and the glyph shows through. */
+  .tile-image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  /* Store name: hidden until hover / focus (also exposed via title + aria) */
+  .tile-name {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 0.55rem 0.35rem 0.4rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1.15;
+    text-align: center;
+    color: #fff;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0));
+    opacity: 0;
+    transform: translateY(30%);
+    transition:
+      opacity var(--transition-base),
+      transform var(--transition-base);
+    pointer-events: none;
+  }
+
+  /* Premium hover: elevation + subtle scale + reveal name */
+  .retailer-card:hover,
+  .retailer-card:focus-visible {
+    transform: translateY(-4px) scale(1.03);
+    box-shadow:
+      0 14px 28px rgba(0, 0, 0, 0.2),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+  }
+
+  .retailer-card.is-light:hover,
+  .retailer-card.is-light:focus-visible {
+    box-shadow:
+      0 14px 28px rgba(0, 0, 0, 0.16),
+      inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+  }
+
+  .retailer-card:hover .tile-name,
+  .retailer-card:focus-visible .tile-name {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .retailer-card:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .retailer-card {
+      transition: box-shadow var(--transition-base);
+    }
+    .retailer-card:hover,
+    .retailer-card:focus-visible {
+      transform: none;
+    }
+    .tile-name {
+      transition: opacity var(--transition-base);
+      transform: none;
+    }
+  }
+</style>

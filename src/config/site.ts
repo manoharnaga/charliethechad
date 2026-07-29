@@ -57,10 +57,13 @@ export const SITE = {
   // Set to null or empty string to hide a platform
   // ─────────────────────────────────────────────────────────────
   social: {
-    twitter: 'https://x.com/charliethechad',
-    twitterHandle: '@charliethechad',     // For Twitter Cards
-    linkedin: 'https://linkedin.com/in/manoharnaga',
-    github: 'https://github.com/manoharnaga',
+    twitter: 'https://x.com/charliethechad3',
+    twitterHandle: '@charliethechad3',     // For Twitter Cards
+    linkedin: 'https://www.linkedin.com/in/charliethechad/',
+    reddit: 'https://www.reddit.com/user/Parking-Sea6410/',
+    wattpad: 'https://www.wattpad.com/user/charliethechad',
+    pinterest: 'https://in.pinterest.com/manoharnaga333/',
+    github: null,
     instagram: null,                 // Set URL or null to hide
     youtube: null,
   },

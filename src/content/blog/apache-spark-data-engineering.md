@@ -8,7 +8,7 @@ coverImage: "/images/blog/apache-spark-data-engineering/apachespark_thumbnail_co
 coverAlt: "Apache Spark data engineering pipeline illustration"
 tags: ["pyspark", "data-engineering", "azure-synapse", "apache-spark", "parquet", "big-data"]
 category: "Tech"
-readingTime: 13
+readingTime: 21
 featured: true
 draft: false
 ---

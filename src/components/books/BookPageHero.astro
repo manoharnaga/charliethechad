@@ -1,9 +1,15 @@
 ---
 /**
- * BookPageHero - Full hero section for dedicated book page
+ * BookPageHero - Conversion-focused book landing hero.
+ *
+ * Semantic <article> with a two-column <header> (cover left, metadata right),
+ * a single H1, italic tagline, keyword-rich description, a lightweight icon
+ * metadata row, one high-emphasis primary CTA, and the data-driven
+ * "Available Worldwide" retailer grid + "Community & Reviews" section.
  */
 
 import BookBadge from './BookBadge.astro';
+import BookRetailers from './BookRetailers.astro';
 
 interface Props {
   title: string;
@@ -16,8 +22,11 @@ interface Props {
   previewLink?: string;
   amazonLink?: string;
   goodreadsLink?: string;
-  otherRetailers?: { name: string; url: string }[];
+  retailers?: Record<string, string | undefined>;
   pageCount?: number;
+  readingTime?: number;
+  language?: string;
+  formats?: string[];
   genres?: string[];
 }
 
@@ -27,13 +36,16 @@ const {
   tagline,
   coverImage,
   publishDate,
-  badge = 'NEW RELEASE',
+  badge = 'New Release',
   status = 'available',
   previewLink,
   amazonLink,
   goodreadsLink,
-  otherRetailers = [],
+  retailers = {},
   pageCount,
+  readingTime,
+  language = 'English',
+  formats = [],
   genres = [],
 } = Astro.props;
 
@@ -48,244 +60,231 @@ const badgeVariant = {
   'available': 'new-release',
   'bestseller': 'bestseller',
 }[status] as 'new-release' | 'bestseller' | 'coming-soon';
+
+// Merge legacy single-link fields into the data-driven retailers object so
+// older book files keep working without edits.
+const effectiveRetailers: Record<string, string | undefined> = { ...retailers };
+if (!effectiveRetailers.amazon && amazonLink) effectiveRetailers.amazon = amazonLink;
+if (!effectiveRetailers.goodreads && goodreadsLink) effectiveRetailers.goodreads = goodreadsLink;
+
+const readTimeLabel = readingTime
+  ? `${readingTime} min read`
+  : pageCount
+    ? `${pageCount} pages`
+    : null;
+const formatsLabel = formats.length > 0 ? formats.join(' \u00B7 ') : null;
+const previewCtaLabel = status === 'upcoming' ? 'Read Sample' : 'Read Free Preview';
 ---
 
-<section class="book-page-hero">
-  <div class="hero-bg-pattern"></div>
-  
+<article class="book-hero">
+  <div class="hero-bg-pattern" aria-hidden="true"></div>
+
   <div class="hero-container">
-    <div class="hero-content">
-      <!-- Cover Section -->
-      <div class="hero-cover-section">
-        <div class="cover-wrapper">
-          <div class="cover-frame">
-            <img 
-              src={coverImage} 
-              alt={`${title} book cover`}
-              loading="eager"
-              fetchpriority="high"
-            />
-          </div>
-          <div class="cover-reflection"></div>
+    <header class="hero-header">
+      <!-- Cover (left) -->
+      <div class="hero-cover">
+        <div class="cover-frame">
+          <img
+            src={coverImage}
+            alt={`Front cover of the book "${title}"`}
+            width="320"
+            height="427"
+            loading="eager"
+            fetchpriority="high"
+            decoding="async"
+          />
         </div>
       </div>
-      
-      <!-- Info Section -->
-      <div class="hero-info-section">
-        <div class="hero-badges">
+
+      <!-- Metadata (right) -->
+      <div class="hero-info">
+        <div class="hero-badge">
           <BookBadge variant={badgeVariant} text={badge} size="lg" />
         </div>
-        
+
         <h1 class="hero-title">{title}</h1>
-        
-        {tagline && (
-          <p class="hero-tagline">{tagline}</p>
-        )}
-        
+
+        {tagline && <p class="hero-tagline">{tagline}</p>}
+
         <p class="hero-description">{description}</p>
-        
-        <div class="hero-meta">
+
+        <ul class="hero-meta" aria-label="Book details">
           {formattedDate && (
-            <div class="meta-item">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
-                <line x1="16" x2="16" y1="2" y2="6"/>
-                <line x1="8" x2="8" y1="2" y2="6"/>
-                <line x1="3" x2="21" y1="10" y2="10"/>
+            <li class="meta-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
+                <line x1="16" x2="16" y1="2" y2="6" />
+                <line x1="8" x2="8" y1="2" y2="6" />
+                <line x1="3" x2="21" y1="10" y2="10" />
               </svg>
-              <span>Released {formattedDate}</span>
-            </div>
+              <span>{formattedDate}</span>
+            </li>
           )}
-          
-          {pageCount && (
-            <div class="meta-item">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+
+          {readTimeLabel && (
+            <li class="meta-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
               </svg>
-              <span>{pageCount} pages</span>
-            </div>
+              <span>{readTimeLabel}</span>
+            </li>
           )}
-        </div>
-        
+
+          {language && (
+            <li class="meta-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M2 12h20" />
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+              </svg>
+              <span>{language}</span>
+            </li>
+          )}
+
+          {formatsLabel && (
+            <li class="meta-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+              </svg>
+              <span>{formatsLabel}</span>
+            </li>
+          )}
+        </ul>
+
         {genres.length > 0 && (
-          <div class="hero-genres">
+          <ul class="hero-genres" aria-label="Genres">
             {genres.map((genre) => (
-              <span class="genre-tag">{genre}</span>
+              <li class="genre-chip">{genre}</li>
             ))}
+          </ul>
+        )}
+
+        {previewLink && (
+          <div class="hero-cta">
+            <a href={previewLink} class="cta-primary">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
+                <path d="M8 7h6" />
+                <path d="M8 11h8" />
+              </svg>
+              {previewCtaLabel}
+            </a>
           </div>
         )}
-        
-        <div class="hero-actions">
-          {previewLink && (
-            <a href={previewLink} class="hero-btn hero-btn-primary">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
-                <path d="M8 7h6"/>
-                <path d="M8 11h8"/>
-              </svg>
-              Read Free Preview
-            </a>
-          )}
-          
-          {amazonLink && (
-            <a href={amazonLink} class="hero-btn hero-btn-amazon" target="_blank" rel="noopener">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="8" cy="21" r="1"/>
-                <circle cx="19" cy="21" r="1"/>
-                <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
-              </svg>
-              Buy on Amazon
-            </a>
-          )}
-        </div>
-        
-        <div class="secondary-links">
-          {goodreadsLink && (
-            <a href={goodreadsLink} class="secondary-link" target="_blank" rel="noopener">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
-              </svg>
-              Add to Goodreads
-            </a>
-          )}
-          
-          {otherRetailers.map((retailer) => (
-            <a href={retailer.url} class="secondary-link" target="_blank" rel="noopener">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                <polyline points="15 3 21 3 21 9"/>
-                <line x1="10" x2="21" y1="14" y2="3"/>
-              </svg>
-              {retailer.name}
-            </a>
-          ))}
-        </div>
       </div>
-    </div>
+    </header>
+
+    <!-- Data-driven store grid + community/reviews -->
+    <BookRetailers retailers={effectiveRetailers} bookTitle={title} />
   </div>
-</section>
+</article>
 
 <style>
-  .book-page-hero {
+  .book-hero {
     position: relative;
     padding: var(--space-16) 0;
     background: var(--color-bg-alt);
     overflow: hidden;
   }
-  
+
   .hero-bg-pattern {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: 
+    inset: 0;
+    background:
       radial-gradient(ellipse at 0% 50%, rgba(37, 99, 235, 0.1) 0%, transparent 50%),
       radial-gradient(ellipse at 100% 0%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
       radial-gradient(ellipse at 50% 100%, rgba(37, 99, 235, 0.05) 0%, transparent 50%);
     pointer-events: none;
   }
-  
-  [data-theme="dark"] .hero-bg-pattern {
-    background: 
+
+  [data-theme='dark'] .hero-bg-pattern {
+    background:
       radial-gradient(ellipse at 0% 50%, rgba(37, 99, 235, 0.2) 0%, transparent 50%),
       radial-gradient(ellipse at 100% 0%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
       radial-gradient(ellipse at 50% 100%, rgba(37, 99, 235, 0.1) 0%, transparent 50%);
   }
-  
+
   .hero-container {
+    position: relative;
     max-width: var(--max-width-wide);
     margin: 0 auto;
     padding: 0 var(--space-6);
-    position: relative;
   }
-  
-  .hero-content {
+
+  /* Two-column header */
+  .hero-header {
     display: grid;
     gap: var(--space-12);
     align-items: center;
+    margin-bottom: var(--space-16);
   }
-  
+
   @media (min-width: 768px) {
-    .hero-content {
-      grid-template-columns: 350px 1fr;
+    .hero-header {
+      grid-template-columns: 340px 1fr;
       gap: var(--space-16);
     }
   }
-  
-  /* Cover Section */
-  .hero-cover-section {
+
+  /* Cover */
+  .hero-cover {
     display: flex;
     justify-content: center;
   }
-  
-  .cover-wrapper {
-    position: relative;
-    perspective: 1000px;
-  }
-  
+
   .cover-frame {
     width: 280px;
     max-width: 100%;
     aspect-ratio: 3 / 4;
     border-radius: var(--radius-lg);
     overflow: hidden;
-    box-shadow: 
+    box-shadow:
       0 25px 50px -12px rgba(0, 0, 0, 0.25),
       0 0 0 1px rgba(0, 0, 0, 0.05),
       -20px 20px 40px rgba(0, 0, 0, 0.15);
     transform: rotateY(-5deg);
     transition: transform var(--transition-base);
   }
-  
+
   .cover-frame:hover {
     transform: rotateY(0deg);
   }
-  
+
   .cover-frame img {
+    display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
-  
-  .cover-reflection {
-    position: absolute;
-    bottom: -40px;
-    left: 5%;
-    right: 5%;
-    height: 40px;
-    background: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 0.1) 0%,
-      transparent 100%
-    );
-    transform: scaleY(-1) rotateY(-5deg);
-    filter: blur(4px);
-    opacity: 0.5;
-    border-radius: var(--radius-lg);
-  }
-  
+
   @media (min-width: 768px) {
     .cover-frame {
       width: 320px;
     }
   }
-  
-  /* Info Section */
-  .hero-info-section {
+
+  @media (prefers-reduced-motion: reduce) {
+    .cover-frame {
+      transform: none;
+    }
+  }
+
+  /* Info column */
+  .hero-info {
     text-align: center;
   }
-  
+
   @media (min-width: 768px) {
-    .hero-info-section {
+    .hero-info {
       text-align: left;
     }
   }
-  
-  .hero-badges {
+
+  .hero-badge {
     margin-bottom: var(--space-4);
   }
-  
+
   .hero-title {
     font-size: clamp(var(--text-4xl), 6vw, var(--text-5xl));
     font-weight: 800;
@@ -293,66 +292,77 @@ const badgeVariant = {
     letter-spacing: -0.03em;
     margin-bottom: var(--space-3);
   }
-  
+
   .hero-tagline {
     font-size: var(--text-xl);
     color: var(--color-accent);
     font-style: italic;
     margin-bottom: var(--space-5);
   }
-  
+
   .hero-description {
     font-size: var(--text-lg);
     color: var(--color-text-secondary);
     line-height: var(--leading-relaxed);
     margin-bottom: var(--space-6);
-    max-width: 550px;
+    max-width: 560px;
   }
-  
+
   @media (min-width: 768px) {
     .hero-description {
       margin-left: 0;
       margin-right: auto;
     }
   }
-  
+
+  /* Metadata row */
   .hero-meta {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-4);
-    margin-bottom: var(--space-5);
+    margin: 0 0 var(--space-5);
+    padding: 0;
+    list-style: none;
     justify-content: center;
   }
-  
+
   @media (min-width: 768px) {
     .hero-meta {
       justify-content: flex-start;
     }
   }
-  
+
   .meta-item {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: var(--space-2);
     font-size: var(--text-sm);
     color: var(--color-text-secondary);
   }
-  
+
+  .meta-item svg {
+    color: var(--color-accent);
+    flex-shrink: 0;
+  }
+
+  /* Genre chips */
   .hero-genres {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-2);
-    margin-bottom: var(--space-6);
+    margin: 0 0 var(--space-8);
+    padding: 0;
+    list-style: none;
     justify-content: center;
   }
-  
+
   @media (min-width: 768px) {
     .hero-genres {
       justify-content: flex-start;
     }
   }
-  
-  .genre-tag {
+
+  .genre-chip {
     padding: var(--space-1) var(--space-3);
     background: var(--color-bg);
     border: 1px solid var(--color-border);
@@ -361,81 +371,50 @@ const badgeVariant = {
     font-weight: 500;
     color: var(--color-text-secondary);
   }
-  
-  .hero-actions {
+
+  /* Single high-emphasis CTA */
+  .hero-cta {
     display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-3);
-    margin-bottom: var(--space-5);
     justify-content: center;
   }
-  
+
   @media (min-width: 768px) {
-    .hero-actions {
+    .hero-cta {
       justify-content: flex-start;
     }
   }
-  
-  .hero-btn {
+
+  .cta-primary {
     display: inline-flex;
     align-items: center;
     gap: var(--space-2);
-    padding: var(--space-4) var(--space-6);
-    font-size: var(--text-base);
-    font-weight: 600;
-    border-radius: var(--radius-md);
+    padding: var(--space-4) var(--space-8);
+    font-size: var(--text-lg);
+    font-weight: 700;
+    border-radius: var(--radius-full);
     text-decoration: none;
-    transition: all var(--transition-fast);
+    color: #fff;
+    background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
+    transition:
+      transform var(--transition-base),
+      box-shadow var(--transition-base);
   }
-  
-  .hero-btn-primary {
-    background: linear-gradient(135deg, var(--color-accent) 0%, #1d4ed8 100%);
-    color: white;
-    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
-  }
-  
-  .hero-btn-primary:hover {
+
+  .cta-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
-    color: white;
+    box-shadow: 0 10px 28px rgba(37, 99, 235, 0.45);
+    color: #fff;
   }
-  
-  .hero-btn-amazon {
-    background: #ff9900;
-    color: #111;
-    box-shadow: 0 4px 14px rgba(255, 153, 0, 0.3);
+
+  .cta-primary:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
   }
-  
-  .hero-btn-amazon:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(255, 153, 0, 0.4);
-    color: #111;
-  }
-  
-  .secondary-links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-4);
-    justify-content: center;
-  }
-  
-  @media (min-width: 768px) {
-    .secondary-links {
-      justify-content: flex-start;
+
+  @media (prefers-reduced-motion: reduce) {
+    .cta-primary:hover {
+      transform: none;
     }
-  }
-  
-  .secondary-link {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    font-size: var(--text-sm);
-    color: var(--color-text-tertiary);
-    text-decoration: none;
-    transition: color var(--transition-fast);
-  }
-  
-  .secondary-link:hover {
-    color: var(--color-accent);
   }
 </style>

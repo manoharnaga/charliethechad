@@ -51,8 +51,26 @@ const linkHref = previewLink || buyLink;
   </button>
   
   <a href={linkHref} class="sticky-promo-content">
+    {/*
+      ⚠️ DO NOT TOUCH — sticky book cover. This markup is intentional and fragile.
+      The widget starts `position: fixed`, `visibility: hidden` and translated
+      off-screen. An image with `loading="lazy"` here NEVER enters the viewport
+      intersection, so the browser defers the load forever and the cover shows
+      blank. It MUST stay `loading="eager"` (the same cover is already fetched by
+      the hero, so this is a cache hit — zero extra cost). Keep the explicit
+      width/height and `object-fit: cover` in the stylesheet below.
+      If the cover is "not working", it is almost always because someone changed
+      this back to lazy. Leave it eager. Do not remove this comment.
+    */}
     <div class="sticky-promo-cover">
-      <img src={coverImage} alt={`${title} cover`} loading="lazy" />
+      <img
+        src={coverImage}
+        alt={`${title} cover`}
+        width="56"
+        height="75"
+        loading="eager"
+        decoding="async"
+      />
     </div>
     <div class="sticky-promo-info">
       <span class="sticky-promo-label">New Book</span>
@@ -153,16 +171,26 @@ const linkHref = previewLink || buyLink;
     border-color: var(--color-text-tertiary);
   }
   
+  /*
+   * ⚠️ DO NOT TOUCH — sticky book cover styling. This is intentional.
+   * Fixed 56×75 box, `overflow: hidden`, and the child <img> at 100%/100% with
+   * `object-fit: cover` are what make the cover render correctly. The subtle
+   * background is a fallback tint so the box is never a jarring pure-white flash
+   * before paint. Do NOT remove `object-fit: cover`, the fixed dimensions, or
+   * change the <img> to lazy-loading (see the note in the markup above).
+   */
   .sticky-promo-cover {
     width: 56px;
     height: 75px;
     flex-shrink: 0;
     border-radius: var(--radius-sm);
     overflow: hidden;
+    background: var(--color-bg-alt);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
   
   .sticky-promo-cover img {
+    display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -255,58 +283,43 @@ const linkHref = previewLink || buyLink;
       const show = () => widget.classList.add('visible');
       const hide = () => widget.classList.remove('visible');
 
-      let observer: IntersectionObserver | null = null;
+      // ⚠️ Reveal is driven purely by ABSOLUTE scroll distance (`scrollY`), which
+      // is always exact. Do NOT reintroduce an IntersectionObserver/sentinel or a
+      // `scrollY / scrollHeight` ratio here: articles use `content-visibility:
+      // auto`, so off-screen blocks report estimated sizes. That makes total
+      // height and any mid-article sentinel position unreliable, and a fast
+      // jump-scroll can skip the intersection callback entirely — the widget then
+      // never appears on long posts. This is the recurring "not working" bug.
+      //
+      // Hysteresis (separate show/hide thresholds) prevents flicker at the edge.
+      const revealAt = () => Math.max(window.innerHeight * 0.9, 500);
+      const hideBelow = () => Math.max(window.innerHeight * 0.5, 300);
 
-      // The article uses `content-visibility: auto`, which makes the total
-      // document scrollHeight an unstable estimate. Deriving visibility from
-      // `scrollY / scrollHeight` therefore flickered on/off near the threshold.
-      // Instead, drop a zero-size sentinel roughly halfway through the content
-      // (by block count, which is stable) and reveal the widget via an
-      // IntersectionObserver once the reader actually reaches it.
-      const content =
-        document.querySelector('.article-content .prose') ||
-        document.querySelector('.prose') ||
-        document.querySelector('main');
+      let shown = false;
+      let ticking = false;
 
-      if (content && content.children.length > 3) {
-        const kids = Array.from(content.children);
-        const mid = kids[Math.floor(kids.length / 2)] as Element;
+      const update = () => {
+        ticking = false;
+        const y = window.scrollY || document.documentElement.scrollTop || 0;
+        if (!shown && y > revealAt()) {
+          shown = true;
+          show();
+        } else if (shown && y < hideBelow()) {
+          shown = false;
+          hide();
+        }
+      };
 
-        const sentinel = document.createElement('span');
-        sentinel.setAttribute('aria-hidden', 'true');
-        sentinel.style.cssText = 'display:block;width:0;height:0;';
-        mid.before(sentinel);
+      const onScroll = () => {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(update);
+      };
 
-        observer = new IntersectionObserver(
-          (entries) => {
-            for (const entry of entries) {
-              if (entry.isIntersecting || entry.boundingClientRect.top < 0) {
-                // Reader has reached (or passed) the halfway mark.
-                show();
-              } else if (entry.boundingClientRect.top > window.innerHeight) {
-                // Scrolled back up above the halfway mark.
-                hide();
-              }
-            }
-          },
-          { threshold: 0, rootMargin: '0px 0px -35% 0px' }
-        );
-        observer.observe(sentinel);
-      } else {
-        // Fallback for short pages: absolute scroll distance is always exact.
-        let ticking = false;
-        const onScroll = () => {
-          if (ticking) return;
-          ticking = true;
-          requestAnimationFrame(() => {
-            if (window.scrollY > Math.max(window.innerHeight * 0.9, 500)) show();
-            else hide();
-            ticking = false;
-          });
-        };
-        window.addEventListener('scroll', onScroll, { passive: true });
-        onScroll();
-      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onScroll, { passive: true });
+      // Evaluate once in case the page loads already scrolled (e.g. anchor/back).
+      update();
 
       // Handle close.
       closeBtn.addEventListener('click', (e) => {
@@ -315,7 +328,8 @@ const linkHref = previewLink || buyLink;
 
         widget.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
         hide();
-        observer?.disconnect();
+        window.removeEventListener('scroll', onScroll);
+        window.removeEventListener('resize', onScroll);
 
         setTimeout(() => {
           widget.classList.add('dismissed');

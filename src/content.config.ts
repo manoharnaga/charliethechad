@@ -53,11 +53,34 @@ const books = defineCollection({
       url: z.string(),
       icon: z.string().optional(),
     })).optional(),
+    /**
+     * Data-driven store links. Add a URL for any store id defined in
+     * `src/config/retailers.ts`; empty/omitted stores are auto-hidden.
+     * Adding a new book = just fill in the links you have.
+     */
+    retailers: z.object({
+      amazon: z.string().optional(),
+      applebooks: z.string().optional(),
+      googleplay: z.string().optional(),
+      kobo: z.string().optional(),
+      barnesnoble: z.string().optional(),
+      everand: z.string().optional(),
+      smashwords: z.string().optional(),
+      vivlio: z.string().optional(),
+      tolino: z.string().optional(),
+      thalia: z.string().optional(),
+      angusrobertson: z.string().optional(),
+      fable: z.string().optional(),
+      goodreads: z.string().optional(),
+    }).default({}),
     featured: z.boolean().default(false),
     status: z.enum(['upcoming', 'available', 'bestseller']).default('available'),
     themes: z.array(z.string()).default([]),
     genres: z.array(z.string()).default([]),
     pageCount: z.number().optional(),
+    readingTime: z.number().optional(),
+    language: z.string().default('English'),
+    formats: z.array(z.enum(['eBook', 'Paperback', 'Hardcover', 'Audiobook'])).default([]),
     isbn: z.string().optional(),
     promotion: promotionSchema,
     seoDescription: z.string().optional(),

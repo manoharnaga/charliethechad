@@ -8,7 +8,7 @@ coverImage: "/images/blog/love-at-first-sight/loveatfirstsight_two_compressed.pn
 coverAlt: "Two strangers sharing eye contact at a crowded traffic signal before the light turns green"
 tags: ["love-at-first-sight", "teen-romance", "first-crush", "eye-contact", "coming-of-age"]
 category: "Love"
-readingTime: 9
+readingTime: 7
 featured: false
 draft: false
 ---

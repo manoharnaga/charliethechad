@@ -8,7 +8,7 @@ coverImage: "/images/blog/what-is-money/the_ten_dollarbill_thumbnail_compressed.
 coverAlt: "A ten-dollar bill with a question mark, symbolizing trust and value in money"
 tags: ["money", "personal-finance", "financial-literacy", "inflation", "barter-system", "currency"]
 category: "Money"
-readingTime: 10
+readingTime: 7
 featured: false
 draft: false
 ---

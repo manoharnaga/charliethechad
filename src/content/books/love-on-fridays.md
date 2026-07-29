@@ -4,9 +4,27 @@ description: "A story of love, friendship, detachment, caring, heartbreak and su
 tagline: "Some stories stay with you forever."
 coverImage: "/images/books/loveonfridays_compressed.png"
 publishDate: 2026-07-07
-amazonLink: "https://amazon.com/your-book"
-goodreadsLink: "https://goodreads.com/your-book"
+amazonLink: "https://www.amazon.com/dp/9360687200"
+goodreadsLink: "https://www.goodreads.com/book/show/256040911-love-on-fridays"
 previewLink: "/books/love-on-fridays"
+# Store links are fully data-driven: add a URL for any store id defined in
+# src/config/retailers.ts. Empty/omitted stores are hidden automatically.
+retailers:
+  amazon: "https://www.amazon.com/dp/9360687200"
+  applebooks: "https://books2read.com/u/3n60V8?store=apple&format=EBOOK"
+  kobo: "https://www.kobo.com/in/en/ebook/love-on-fridays?sId=7c7773a5-cfb2-49bb-8565-ca97cf2b29aa&ssId=nQuL50InQ-tvbeoJ0EQGi"
+  thalia: "https://www.thalia.de/shop/home/artikeldetails/A1081081086"
+  smashwords: "https://www.smashwords.com/books/view/2073663"
+  angusrobertson: "https://www.angusrobertson.com.au/books/x/p/9789361231674"
+  vivlio: "https://shop.vivlio.com/product/9789361231674_9789361231674_10020/love-on-fridays"
+  fable: "https://fable.co/book/x-9789361231674"
+  goodreads: "https://www.goodreads.com/book/show/256040911-love-on-fridays"
+  everand: https://www.everand.com/book/1066398804
+formats:
+  - eBook
+  - Paperback
+language: "English"
+pageCount: 320
 featured: true
 status: "available"
 themes:
@@ -703,5 +721,5 @@ Intriguing moments that await you in the full book...
 
 <p style="text-align: center; font-size: 1.3rem; margin: 3rem 0;">
 <strong>Want to know what happens next?</strong> 
-<a href="https://amazon.com/your-book" style="display: inline-block; background: linear-gradient(135deg, #e8b86d 0%, #c8a97e 100%); color: #1a1a2e; padding: 0.8rem 2rem; border-radius: 50px; font-weight: bold; text-decoration: none; margin-left: 0.5rem;">Get the Full Book →</a>
+<a href="https://www.amazon.com/dp/9360687200" style="display: inline-block; background: linear-gradient(135deg, #e8b86d 0%, #c8a97e 100%); color: #1a1a2e; padding: 0.8rem 2rem; border-radius: 50px; font-weight: bold; text-decoration: none; margin-left: 0.5rem;">Get the Full Book →</a>
 </p>

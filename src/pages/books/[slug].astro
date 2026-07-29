@@ -35,14 +35,54 @@ const {
   amazonLink,
   goodreadsLink,
   previewLink,
-  otherRetailers,
+  retailers,
   themes,
   genres,
   pageCount,
+  readingTime,
+  language,
+  formats,
+  isbn,
   promotion,
 } = book.data;
 
 const seoDesc = seoDescription || description;
+
+// Merge legacy single-link fields into the data-driven retailers object.
+const effectiveRetailers: Record<string, string | undefined> = { ...(retailers || {}) };
+if (!effectiveRetailers.amazon && amazonLink) effectiveRetailers.amazon = amazonLink;
+if (!effectiveRetailers.goodreads && goodreadsLink) effectiveRetailers.goodreads = goodreadsLink;
+
+// Purchase URLs (everything except the community/reviews link) power offers.
+const purchaseUrls = Object.entries(effectiveRetailers)
+  .filter(([id, url]) => id !== 'goodreads' && typeof url === 'string' && url.length > 0)
+  .map(([, url]) => url as string);
+// All external profile URLs (incl. Goodreads) power sameAs.
+const sameAs = Object.values(effectiveRetailers).filter(
+  (url): url is string => typeof url === 'string' && url.length > 0
+);
+
+// Map friendly format labels to Schema.org book format URLs.
+const formatSchemaMap: Record<string, string> = {
+  eBook: 'https://schema.org/EBook',
+  Paperback: 'https://schema.org/Paperback',
+  Hardcover: 'https://schema.org/Hardcover',
+  Audiobook: 'https://schema.org/AudiobookFormat',
+};
+const bookFormats = (formats || [])
+  .map((f) => formatSchemaMap[f])
+  .filter(Boolean);
+
+const availability =
+  status === 'upcoming'
+    ? 'https://schema.org/PreOrder'
+    : 'https://schema.org/InStock';
+
+const offers = purchaseUrls.map((url) => ({
+  '@type': 'Offer',
+  url,
+  availability,
+}));
 
 // Schema.org Book structured data
 const bookSchema = {
@@ -62,24 +102,11 @@ const bookSchema = {
   "datePublished": publishDate?.toISOString().split('T')[0],
   "genre": genres?.join(', '),
   "numberOfPages": pageCount,
-  "inLanguage": "en",
-  ...(amazonLink && {
-    "workExample": {
-      "@type": "Book",
-      "bookFormat": "https://schema.org/EBook",
-      "potentialAction": {
-        "@type": "ReadAction",
-        "target": {
-          "@type": "EntryPoint",
-          "urlTemplate": amazonLink,
-          "actionPlatform": [
-            "https://schema.org/DesktopWebPlatform",
-            "https://schema.org/MobileWebPlatform"
-          ]
-        }
-      }
-    }
-  })
+  "inLanguage": language,
+  ...(isbn && { "isbn": isbn }),
+  ...(bookFormats.length > 0 && { "bookFormat": bookFormats }),
+  ...(sameAs.length > 0 && { "sameAs": sameAs }),
+  ...(offers.length > 0 && { "offers": offers }),
 };
 ---
 
@@ -105,8 +132,11 @@ const bookSchema = {
       previewLink={previewLink}
       amazonLink={amazonLink}
       goodreadsLink={goodreadsLink}
-      otherRetailers={otherRetailers}
+      retailers={effectiveRetailers}
       pageCount={pageCount}
+      readingTime={readingTime}
+      language={language}
+      formats={formats}
       genres={genres}
     />
     

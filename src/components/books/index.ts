@@ -14,3 +14,4 @@ export { default as BookBadge } from './BookBadge.astro';
 export { default as BookThemeTags } from './BookThemeTags.astro';
 export { default as BookPreviewSection } from './BookPreviewSection.astro';
 export { default as BookPageHero } from './BookPageHero.astro';
+export { default as BookRetailers } from './BookRetailers.astro';

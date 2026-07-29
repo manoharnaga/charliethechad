@@ -8,7 +8,7 @@ coverImage: "/images/blog/love-at-first-sight/loveatfirstsight_one_compressed.pn
 coverAlt: "A boy in a cherry-red convertible at a busy traffic signal, noticing a girl across the road"
 tags: ["love-at-first-sight", "teen-romance", "first-crush", "coming-of-age", "romance-story"]
 category: "Love"
-readingTime: 9
+readingTime: 7
 featured: false
 draft: false
 ---
