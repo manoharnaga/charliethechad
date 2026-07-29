@@ -61,7 +61,7 @@ test.describe('Meta Tags', () => {
     const data = JSON.parse(content);
 
     expect(data['@context']).toContain('schema.org');
-    expect(data['@type']).toBe('Article');
+    expect(data['@type']).toBe('BlogPosting');
     expect(data.headline).toBeTruthy();
     expect(data.author).toBeTruthy();
     expect(data.datePublished).toBeTruthy();

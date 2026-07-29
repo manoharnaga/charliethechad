@@ -44,7 +44,7 @@ const estimatedReadingTime = readingTime || Math.ceil(description.length / 200) 
   <a href={`/blog/${slug}`} class="card-link">
     {coverImage && variant !== 'compact' && (
       <div class="card-image">
-        <img src={coverImage} alt={title} loading="lazy" />
+        <img src={coverImage} alt={`Illustration for ${title}`} loading="lazy" decoding="async" />
       </div>
     )}
     

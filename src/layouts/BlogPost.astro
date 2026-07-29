@@ -5,7 +5,9 @@ import Footer from '@/components/Footer.astro';
 import TipJar from '@/components/TipJar.astro';
 import BookArticlePromo from '@/components/books/BookArticlePromo.astro';
 import BookStickyPromo from '@/components/books/BookStickyPromo.astro';
+import BlogCard from '@/components/BlogCard.astro';
 import { getCollection } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
 import { SITE } from '@/config/site';
 
 interface Props {
@@ -19,6 +21,8 @@ interface Props {
   category?: string;
   tags?: string[];
   readingTime?: number;
+  canonicalURL?: string;
+  relatedPosts?: CollectionEntry<'blog'>[];
 }
 
 const { 
@@ -31,7 +35,9 @@ const {
   author = SITE.author.name,
   category = 'General',
   tags = [],
-  readingTime
+  readingTime,
+  canonicalURL,
+  relatedPosts = []
 } = Astro.props;
 
 // Get featured book for article promotion
@@ -77,6 +83,7 @@ const estimatedReadingTime = readingTime || 5;
   updatedDate={updatedDate}
   author={author}
   tags={tags}
+  canonicalURL={canonicalURL}
 >
   <!-- Reading Progress Bar -->
   <div class="progress-bar" aria-hidden="true">
@@ -101,7 +108,7 @@ const estimatedReadingTime = readingTime || 5;
           <div class="article-meta">
             <div class="author-info">
               <div class="author-avatar">
-                <img src="/favicon.ico" alt={author} />
+                <img src="/favicon.ico" alt={`${author} profile`} width="48" height="48" decoding="async" />
               </div>
               <div class="author-details">
                 <span class="author-name">{author}</span>
@@ -125,7 +132,7 @@ const estimatedReadingTime = readingTime || 5;
       <!-- Hero Image -->
       {coverImage && (
         <figure class="article-hero">
-          <img src={coverImage} alt={coverAlt || title} loading="eager" />
+          <img src={coverImage} alt={coverAlt || title} loading="eager" decoding="async" fetchpriority="high" />
         </figure>
       )}
       
@@ -134,7 +141,7 @@ const estimatedReadingTime = readingTime || 5;
         <!-- Table of Contents (Desktop) -->
         <aside class="toc-sidebar" id="toc-sidebar">
           <nav class="toc" aria-label="Table of contents">
-            <h4>On this page</h4>
+            <h2>On this page</h2>
             <ul id="toc-list"></ul>
           </nav>
         </aside>
@@ -161,7 +168,7 @@ const estimatedReadingTime = readingTime || 5;
       <!-- Article Footer -->
       <footer class="article-footer">
         <div class="share-section">
-          <h4>Share this article</h4>
+          <h2>Share this article</h2>
           <div class="share-buttons">
             <a 
               href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${Astro.url}`}
@@ -203,16 +210,35 @@ const estimatedReadingTime = readingTime || 5;
         
         <div class="author-section">
           <div class="author-avatar large">
-            <img src="/favicon.ico" alt={author} />
+            <img src="/favicon.ico" alt={`${author} profile`} width="48" height="48" loading="lazy" decoding="async" />
           </div>
           <div class="author-bio">
             <span class="written-by">Written by</span>
-            <h4>{author}</h4>
+            <h2>{author}</h2>
             <p>{SITE.tagline}</p>
           </div>
         </div>
       </footer>
     </article>
+
+    {relatedPosts.length > 0 && (
+      <section class="related-posts" aria-labelledby="related-posts-heading">
+        <h2 id="related-posts-heading">Related articles</h2>
+        <div class="related-posts-grid">
+          {relatedPosts.map(relatedPost => (
+            <BlogCard
+              title={relatedPost.data.title}
+              description={relatedPost.data.description}
+              slug={relatedPost.id}
+              pubDate={relatedPost.data.pubDate}
+              coverImage={relatedPost.data.coverImage}
+              tags={relatedPost.data.tags}
+              readingTime={relatedPost.data.readingTime}
+            />
+          ))}
+        </div>
+      </section>
+    )}
     
     <!-- Leave me a tip -->
     <TipJar />
@@ -234,7 +260,7 @@ const estimatedReadingTime = readingTime || 5;
     {SITE.newsletter.enabled && (
       <section class="newsletter-section">
         <div class="newsletter-content">
-          <h3>{SITE.newsletter.heading}</h3>
+          <h2>{SITE.newsletter.heading}</h2>
           <p>{SITE.newsletter.description}</p>
           <form class="newsletter-form" action={SITE.newsletter.endpoint} method="post">
             <input type="email" placeholder={SITE.newsletter.placeholder} required />
@@ -285,6 +311,28 @@ const estimatedReadingTime = readingTime || 5;
   /* Article Page */
   .article-page {
     min-height: calc(100vh - var(--header-height));
+  }
+
+  .related-posts {
+    max-width: var(--max-width-wide);
+    margin: var(--space-12) auto;
+    padding: 0 var(--space-6);
+  }
+
+  .related-posts > h2 {
+    margin-bottom: var(--space-6);
+  }
+
+  .related-posts-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-6);
+  }
+
+  @media (max-width: 800px) {
+    .related-posts-grid {
+      grid-template-columns: 1fr;
+    }
   }
   
   .article {
@@ -434,7 +482,7 @@ const estimatedReadingTime = readingTime || 5;
     max-height: calc(100vh - var(--header-height) - var(--space-12));
   }
   
-  .toc h4 {
+  .toc h2 {
     font-size: var(--text-sm);
     font-weight: 600;
     text-transform: uppercase;
@@ -604,7 +652,7 @@ const estimatedReadingTime = readingTime || 5;
     text-align: center;
   }
   
-  .share-section h4 {
+  .share-section h2 {
     font-size: var(--text-sm);
     font-weight: 500;
     color: var(--color-text-secondary);
@@ -654,7 +702,7 @@ const estimatedReadingTime = readingTime || 5;
     letter-spacing: 0.05em;
   }
   
-  .author-bio h4 {
+  .author-bio h2 {
     font-size: var(--text-xl);
     font-weight: 600;
     margin: var(--space-1) 0 var(--space-2);
@@ -682,7 +730,7 @@ const estimatedReadingTime = readingTime || 5;
     text-align: center;
   }
   
-  .newsletter-content h3 {
+  .newsletter-content h2 {
     font-size: var(--text-2xl);
     font-weight: 600;
     margin-bottom: var(--space-2);

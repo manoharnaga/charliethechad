@@ -21,6 +21,16 @@ export const SEARCH_TERM = 'money';
 
 // The featured book (src/content/books/love-on-fridays.md, featured: true).
 export const FEATURED_BOOK_TITLE = 'Love on Fridays!';
+// Featured book detail page (promotion.stickyWidget: true).
+export const FEATURED_BOOK_SLUG = 'love-on-fridays';
+export const FEATURED_BOOK_PATH = `/books/${FEATURED_BOOK_SLUG}`;
+// Book with promotion.stickyWidget: false — the sticky promo must NOT render here.
+export const NO_STICKY_BOOK_PATH = '/books/death-on-fridays';
+
+// A long-form blog post. The sticky promo historically failed to appear on long
+// posts (content-visibility + IntersectionObserver sentinel), so it's the key
+// regression case for the sticky-promo tests.
+export const LONG_BLOG_PATH = BLOG_PATH;
 
 // All public, crawlable page routes.
 export const CORE_PAGES = ['/', '/blog', '/about', '/contact', '/books', '/search', '/privacy'];

@@ -16,6 +16,18 @@ interface Props {
 
 const { post } = Astro.props;
 const { Content } = await render(post);
+const posts = await getCollection('blog', ({ data }) => !data.draft);
+const relatedPosts = posts
+  .filter(candidate => candidate.id !== post.id)
+  .map(candidate => ({
+    post: candidate,
+    score:
+      candidate.data.tags.filter(tag => post.data.tags.includes(tag)).length * 2 +
+      (candidate.data.category === post.data.category ? 1 : 0),
+  }))
+  .sort((left, right) => right.score - left.score || right.post.data.pubDate.getTime() - left.post.data.pubDate.getTime())
+  .slice(0, 3)
+  .map(({ post: relatedPost }) => relatedPost);
 ---
 
 <BlogPost
@@ -29,6 +41,8 @@ const { Content } = await render(post);
   category={post.data.category}
   tags={post.data.tags}
   readingTime={post.data.readingTime}
+  canonicalURL={post.data.canonicalURL}
+  relatedPosts={relatedPosts}
 >
   <Content />
 </BlogPost>
