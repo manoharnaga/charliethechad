@@ -240,6 +240,12 @@ test.describe('Security Headers Configuration', () => {
     expect(headersFile).toMatch(/base-uri\s+'self'/i);
     expect(headersFile).toMatch(/form-action\s+'self'/i);
   });
+
+  test('CSP allows Google Analytics resources', () => {
+    expect(headersFile).toMatch(/script-src[^;]*https:\/\/www\.googletagmanager\.com/i);
+    expect(headersFile).toMatch(/connect-src[^;]*https:\/\/www\.google-analytics\.com/i);
+    expect(headersFile).toMatch(/connect-src[^;]*https:\/\/region1\.google-analytics\.com/i);
+  });
 });
 
 test.describe('No Sensitive Data Exposure', () => {
