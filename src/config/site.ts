@@ -151,7 +151,7 @@ export const SITE = {
   // ─────────────────────────────────────────────────────────────
   analytics: {
     // Google Analytics 4
-    googleAnalyticsId: null,  // e.g., 'G-XXXXXXXXXX'
+    googleAnalyticsId: 'G-XMV0EB0Q4T',
     
     // Plausible (privacy-friendly)
     plausibleDomain: null,    // e.g., 'charliethechad.com'
